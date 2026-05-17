@@ -14,16 +14,14 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# Copy composer files and install dependencies
-COPY composer.json composer.lock ./
+# Copy all application source first
+COPY . .
+
+# Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction
 
-# Copy package files and build frontend
-COPY package.json package-lock.json* ./
+# Install and build frontend
 RUN npm install && npm run build
-
-# Copy the rest of the application
-COPY . .
 
 # Run post-install scripts
 RUN composer dump-autoload --optimize \
