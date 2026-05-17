@@ -8,24 +8,23 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (Schema::hasTable('attendance')) {
-            return;
-        }
-
-        Schema::create('attendance', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('employee_id')->constrained()->onDelete('cascade');
-            $table->date('date');
-            $table->time('check_in')->nullable();
-            $table->time('check_out')->nullable();
-            $table->enum('status', ['present', 'absent', 'late'])->default('present');
-            $table->text('notes')->nullable();
-            $table->timestamps();
+        Schema::table('employees', function (Blueprint $table) {
+            if (!Schema::hasColumn('employees', 'start_date')) {
+                $table->date('start_date')->nullable();
+            }
+            if (!Schema::hasColumn('employees', 'end_date')) {
+                $table->date('end_date')->nullable();
+            }
+            if (!Schema::hasColumn('employees', 'contract_status')) {
+                $table->string('contract_status')->nullable();
+            }
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('attendance');
+        Schema::table('employees', function (Blueprint $table) {
+            $table->dropColumn(['start_date', 'end_date', 'contract_status']);
+        });
     }
 };

@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('employees', function (Blueprint $table) {
-            $table->string('photo')->nullable()->after('contract_status');
-            $table->string('cv_file')->nullable()->after('photo');
+            if (!Schema::hasColumn('employees', 'photo')) {
+                $table->string('photo')->nullable();
+            }
+            if (!Schema::hasColumn('employees', 'cv_file')) {
+                $table->string('cv_file')->nullable();
+            }
         });
     }
 

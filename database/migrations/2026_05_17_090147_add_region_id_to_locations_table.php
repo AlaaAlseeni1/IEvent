@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasColumn('locations', 'region_id')) {
+            return;
+        }
+
         Schema::table('locations', function (Blueprint $table) {
             $table->foreignId('region_id')->nullable()->after('id')->constrained('regions')->onDelete('set null');
             $table->index('region_id');
