@@ -30,6 +30,7 @@
                     <option value="active" {{ old('status', $subscription->status)==='active'?'selected':'' }}>نشط</option>
                     <option value="expired" {{ old('status', $subscription->status)==='expired'?'selected':'' }}>منتهي</option>
                     <option value="cancelled" {{ old('status', $subscription->status)==='cancelled'?'selected':'' }}>ملغي</option>
+                    <option value="suspended" {{ old('status', $subscription->status)==='suspended'?'selected':'' }}>معلق</option>
                 </select>
             </div>
             <div class="col-md-4">
@@ -43,6 +44,19 @@
             <div class="col-md-4">
                 <label class="form-label">السعر</label>
                 <input type="number" step="0.01" min="0" name="price" class="form-control" value="{{ old('price', $subscription->price) }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">طريقة الدفع</label>
+                <select name="payment_method" class="form-select">
+                    <option value="">غير محدد</option>
+                    @foreach(['تحويل بنكي','بطاقة','نقدي','شيك'] as $pm)
+                        <option value="{{ $pm }}" {{ old('payment_method', $subscription->payment_method)===$pm?'selected':'' }}>{{ $pm }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">تاريخ آخر دفع</label>
+                <input type="date" name="paid_at" class="form-control" value="{{ old('paid_at', $subscription->paid_at?->format('Y-m-d')) }}">
             </div>
             <div class="col-12">
                 <label class="form-label">ملاحظات</label>

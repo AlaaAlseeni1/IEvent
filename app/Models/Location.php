@@ -6,7 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Location extends Model
 {
+    use \App\Models\Concerns\BelongsToCompany;
+
     protected $fillable = [
+        'company_id',
         'name', 'type', 'city', 'address', 'capacity', 'is_active', 'notes', 'region_id', 'lat', 'lng',
     ];
 

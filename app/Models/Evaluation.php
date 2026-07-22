@@ -6,7 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Evaluation extends Model
 {
+    use \App\Models\Concerns\BelongsToCompany;
+
     protected $fillable = [
+        'company_id',
         'employee_id', 'evaluator_id', 'period', 'criteria', 'total_score', 'status', 'notes',
     ];
 

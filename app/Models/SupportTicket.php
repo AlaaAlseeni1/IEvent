@@ -6,7 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class SupportTicket extends Model
 {
+    use \App\Models\Concerns\BelongsToCompany;
+
     protected $fillable = [
+        'company_id',
         'user_id', 'title', 'description', 'status', 'priority',
         'resolved_by', 'resolution_notes', 'resolved_at',
     ];

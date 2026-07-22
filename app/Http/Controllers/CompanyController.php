@@ -74,8 +74,8 @@ class CompanyController extends Controller
             'company_id' => $company->id,
         ]);
 
-        Role::firstOrCreate(['name' => 'company']);
-        $user->assignRole('company');
+        Role::firstOrCreate(['name' => 'company_admin']);
+        $user->assignRole('company_admin');
 
         return back()->with('company_credentials', [
             'company'  => $company->name,

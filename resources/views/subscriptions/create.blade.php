@@ -27,9 +27,9 @@
             <div class="col-md-6">
                 <label class="form-label">الباقة</label>
                 <select name="package_id" class="form-select">
-                    <option value="">بدون باقة</option>
+                    <option value="">بدون باقة (حدد تاريخ النهاية يدوياً)</option>
                     @foreach($packages as $pkg)
-                        <option value="{{ $pkg->id }}" {{ old('package_id') == $pkg->id ? 'selected' : '' }}>{{ $pkg->name }} ({{ number_format($pkg->price, 2) }})</option>
+                        <option value="{{ $pkg->id }}" {{ old('package_id') == $pkg->id ? 'selected' : '' }}>{{ $pkg->name }} — {{ $pkg->type_label }} ({{ number_format($pkg->price, 2) }} ر.س)</option>
                     @endforeach
                 </select>
             </div>
@@ -38,12 +38,26 @@
                 <input type="date" name="starts_at" class="form-control" value="{{ old('starts_at', today()->format('Y-m-d')) }}" required>
             </div>
             <div class="col-md-4">
-                <label class="form-label">تاريخ النهاية <span class="text-danger">*</span></label>
-                <input type="date" name="ends_at" class="form-control" value="{{ old('ends_at', today()->addYear()->format('Y-m-d')) }}" required>
+                <label class="form-label">تاريخ النهاية <span style="color:#9ca3af;font-size:12px">(اتركه فارغاً ليُحسب من مدة الباقة)</span></label>
+                <input type="date" name="ends_at" class="form-control" value="{{ old('ends_at') }}">
             </div>
             <div class="col-md-4">
                 <label class="form-label">السعر</label>
                 <input type="number" step="0.01" min="0" name="price" class="form-control" value="{{ old('price') }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">طريقة الدفع</label>
+                <select name="payment_method" class="form-select">
+                    <option value="">غير محدد</option>
+                    <option value="تحويل بنكي" {{ old('payment_method')==='تحويل بنكي'?'selected':'' }}>تحويل بنكي</option>
+                    <option value="بطاقة" {{ old('payment_method')==='بطاقة'?'selected':'' }}>بطاقة</option>
+                    <option value="نقدي" {{ old('payment_method')==='نقدي'?'selected':'' }}>نقدي</option>
+                    <option value="شيك" {{ old('payment_method')==='شيك'?'selected':'' }}>شيك</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">تاريخ الدفع</label>
+                <input type="date" name="paid_at" class="form-control" value="{{ old('paid_at', today()->format('Y-m-d')) }}">
             </div>
             <div class="col-12">
                 <label class="form-label">ملاحظات</label>

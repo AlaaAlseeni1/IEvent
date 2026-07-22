@@ -46,7 +46,28 @@ class RolesAndPermissionsSeeder extends Seeder
             'attendance.view',
         ]);
 
-        // دور الشركة (للدخول إلى بوابة الشركات)
+        // دور الشركة (للدخول إلى بوابة الشركات - عرض فقط)
         Role::firstOrCreate(['name' => 'company']);
+
+        // مدير الشركة (Company Admin): يدير بيانات شركته فقط داخل لوحة التحكم
+        $companyAdmin = Role::firstOrCreate(['name' => 'company_admin']);
+        $companyAdmin->syncPermissions([
+            'employees.view', 'employees.create', 'employees.edit', 'employees.delete',
+            'contracts.view', 'contracts.create', 'contracts.edit', 'contracts.delete',
+            'attendance.view', 'attendance.create', 'attendance.edit', 'attendance.delete',
+            'users.view', 'users.create', 'users.edit', 'users.delete',
+        ]);
+
+        // مشرف ومدير إدارة (أدوار داخل الشركة)
+        $supervisor = Role::firstOrCreate(['name' => 'supervisor']);
+        $supervisor->syncPermissions([
+            'employees.view', 'attendance.view', 'attendance.create', 'attendance.edit',
+        ]);
+
+        $deptManager = Role::firstOrCreate(['name' => 'department_manager']);
+        $deptManager->syncPermissions([
+            'employees.view', 'employees.create', 'employees.edit',
+            'contracts.view', 'attendance.view', 'attendance.create', 'attendance.edit',
+        ]);
     }
 }

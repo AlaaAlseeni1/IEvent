@@ -21,9 +21,17 @@
                     <input type="text" name="name" class="form-control" value="{{ old('name', $package->name) }}" required>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">الشركة</label>
+                    <label class="form-label">مدة الباقة *</label>
+                    <select name="type" class="form-select" required>
+                        @foreach(\App\Models\Package::TYPES as $key => $label)
+                            <option value="{{ $key }}" {{ old('type', $package->type)==$key?'selected':'' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">خاصة بشركة (اختياري — اتركها فارغة لتكون باقة عامة)</label>
                     <select name="company_id" class="form-select">
-                        <option value="">-- بدون شركة --</option>
+                        <option value="">باقة عامة لكل الشركات</option>
                         @foreach($companies as $c)
                             <option value="{{ $c->id }}" {{ old('company_id', $package->company_id)==$c->id?'selected':'' }}>{{ $c->name }}</option>
                         @endforeach

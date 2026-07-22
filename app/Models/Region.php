@@ -6,7 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Region extends Model
 {
-    protected $fillable = ['name', 'parent_id', 'gps_polygon', 'notes', 'is_active'];
+    use \App\Models\Concerns\BelongsToCompany;
+
+    protected $fillable = [
+        'company_id','name', 'parent_id', 'gps_polygon', 'notes', 'is_active'];
 
     protected $casts = ['gps_polygon' => 'array'];
 

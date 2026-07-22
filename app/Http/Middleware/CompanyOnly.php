@@ -16,7 +16,7 @@ class CompanyOnly
             return redirect()->route('login');
         }
 
-        if (!$user->hasRole('company') || !$user->company) {
+        if (!$user->hasAnyRole(['company', 'company_admin']) || !$user->company) {
             abort(403, 'هذه الصفحة مخصصة لحسابات الشركات فقط');
         }
 

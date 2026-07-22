@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Assignment extends Model
 {
+    use \App\Models\Concerns\BelongsToCompany;
+
     protected $fillable = [
         'employee_id', 'location_id', 'company_id', 'supervisor_id',
         'start_date', 'end_date', 'status', 'role', 'notes',

@@ -88,9 +88,14 @@ Route::get('/dashboard', function () {
         'latestEmployees', 'todayAttendance', 'latestContracts',
         'attendanceChart', 'deptChart'
     ));
-})->middleware(['auth', 'verified', 'staff'])->name('dashboard');
+})->middleware(['auth', 'verified', 'staff', 'subscribed'])->name('dashboard');
 
-Route::middleware(['auth', 'staff'])->group(function () {
+// صفحة تنبيه انتهاء الاشتراك (لموظفي الشركات المنتهية اشتراكاتها)
+Route::get('/subscription-expired', function () {
+    return view('subscription-expired');
+})->middleware('auth')->name('subscription.expired');
+
+Route::middleware(['auth', 'staff', 'subscribed'])->group(function () {
     // البروفايل
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -106,23 +111,26 @@ Route::middleware(['auth', 'staff'])->group(function () {
     // المستخدمين
     Route::resource('users', UserController::class);
 
-    // الأدوار والصلاحيات
-    Route::resource('roles', RoleController::class);
+    // إعدادات المنصة (المشرف العام فقط)
+    Route::middleware('role:admin')->group(function () {
+        // الأدوار والصلاحيات
+        Route::resource('roles', RoleController::class);
 
-    // الإدارات (Modules)
-    Route::resource('modules', ModuleController::class);
-    Route::patch('modules/{module}/toggle', [ModuleController::class, 'toggle'])->name('modules.toggle');
+        // الإدارات (Modules)
+        Route::resource('modules', ModuleController::class);
+        Route::patch('modules/{module}/toggle', [ModuleController::class, 'toggle'])->name('modules.toggle');
 
-    // الإعدادات
-    Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
-    Route::post('settings', [SettingsController::class, 'update'])->name('settings.update');
+        // الإعدادات
+        Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
+        Route::post('settings', [SettingsController::class, 'update'])->name('settings.update');
 
-    // الحقول المخصصة
-    Route::resource('custom-fields', CustomFieldController::class);
+        // الحقول المخصصة
+        Route::resource('custom-fields', CustomFieldController::class);
 
-    // التعريفات الإستعلامية (Lookups)
-    Route::resource('lookup-groups', LookupGroupController::class)->except(['create', 'show', 'edit']);
-    Route::resource('lookups', LookupController::class)->only(['store', 'update', 'destroy']);
+        // التعريفات الإستعلامية (Lookups)
+        Route::resource('lookup-groups', LookupGroupController::class)->except(['create', 'show', 'edit']);
+        Route::resource('lookups', LookupController::class)->only(['store', 'update', 'destroy']);
+    });
 
     // العقود
     Route::resource('contracts', ContractController::class);
@@ -143,15 +151,18 @@ Route::middleware(['auth', 'staff'])->group(function () {
     // المواقع
     Route::resource('locations', LocationController::class);
 
-    // الشركات
-    Route::resource('companies', CompanyController::class)->except(['show']);
-    Route::post('companies/{company}/create-user', [CompanyController::class, 'createUser'])->name('companies.create-user');
-    Route::post('companies/{company}/reset-user-password', [CompanyController::class, 'resetUserPassword'])->name('companies.reset-user-password');
+    // إدارة المنصة: الشركات والاشتراكات والباقات (المشرف العام فقط)
+    Route::middleware('role:admin')->group(function () {
+        Route::resource('companies', CompanyController::class)->except(['show']);
+        Route::post('companies/{company}/create-user', [CompanyController::class, 'createUser'])->name('companies.create-user');
+        Route::post('companies/{company}/reset-user-password', [CompanyController::class, 'resetUserPassword'])->name('companies.reset-user-password');
 
-    // اشتراكات الشركات
-    Route::resource('subscriptions', SubscriptionController::class)->except(['show']);
-    Route::post('subscriptions/{subscription}/cancel', [SubscriptionController::class, 'cancel'])->name('subscriptions.cancel');
-    Route::post('subscriptions/{subscription}/renew', [SubscriptionController::class, 'renew'])->name('subscriptions.renew');
+        Route::resource('subscriptions', SubscriptionController::class)->except(['show']);
+        Route::post('subscriptions/{subscription}/cancel', [SubscriptionController::class, 'cancel'])->name('subscriptions.cancel');
+        Route::post('subscriptions/{subscription}/renew', [SubscriptionController::class, 'renew'])->name('subscriptions.renew');
+        Route::post('subscriptions/{subscription}/suspend', [SubscriptionController::class, 'suspend'])->name('subscriptions.suspend');
+        Route::post('subscriptions/{subscription}/resume', [SubscriptionController::class, 'resume'])->name('subscriptions.resume');
+    });
 
     // الإسنادات
     Route::resource('assignments', AssignmentController::class);
@@ -194,8 +205,8 @@ Route::middleware(['auth', 'staff'])->group(function () {
     Route::post('notes', [NoteController::class, 'store'])->name('notes.store');
     Route::delete('notes/{note}', [NoteController::class, 'destroy'])->name('notes.destroy');
 
-    // الباقات
-    Route::resource('packages', PackageController::class)->except(['show']);
+    // باقات الاشتراك (المشرف العام فقط)
+    Route::resource('packages', PackageController::class)->except(['show'])->middleware('role:admin');
 
     // الاستبيانات
     Route::resource('surveys', SurveyController::class);
@@ -203,8 +214,8 @@ Route::middleware(['auth', 'staff'])->group(function () {
     Route::delete('surveys/{survey}/questions/{question}', [SurveyController::class, 'removeQuestion'])->name('surveys.questions.remove');
     Route::post('surveys/{survey}/respond', [SurveyController::class, 'respond'])->name('surveys.respond');
 
-    // الاستيراد
-    Route::get('imports', [ImportController::class, 'index'])->name('imports.index');
+    // الاستيراد (المشرف العام فقط)
+    Route::get('imports', [ImportController::class, 'index'])->name('imports.index')->middleware('role:admin');
     Route::post('imports/employees', [ImportController::class, 'employees'])->name('imports.employees');
     Route::post('imports/companies', [ImportController::class, 'companies'])->name('imports.companies');
     Route::post('imports/locations', [ImportController::class, 'locations'])->name('imports.locations');
@@ -236,7 +247,7 @@ Route::middleware(['auth', 'staff'])->group(function () {
 });
 
 // بوابة الموظف
-Route::middleware(['auth', 'employee'])->prefix('portal')->name('portal.')->group(function () {
+Route::middleware(['auth', 'employee', 'subscribed'])->prefix('portal')->name('portal.')->group(function () {
     Route::get('/', [EmployeePortalController::class, 'dashboard'])->name('dashboard');
     Route::post('/check-in', [EmployeePortalController::class, 'checkIn'])->name('check-in');
     Route::post('/check-out', [EmployeePortalController::class, 'checkOut'])->name('check-out');

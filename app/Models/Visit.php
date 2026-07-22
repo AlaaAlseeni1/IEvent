@@ -6,7 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Visit extends Model
 {
+    use \App\Models\Concerns\BelongsToCompany;
+
     protected $fillable = [
+        'company_id',
         'location_id', 'employee_id', 'visit_date', 'check_in_time',
         'check_out_time', 'lat', 'lng', 'notes', 'status',
     ];

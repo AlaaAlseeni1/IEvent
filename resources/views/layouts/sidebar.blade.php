@@ -83,12 +83,14 @@
             <a href="{{ route('locations.index') }}" class="{{ request()->is('locations*') ? 'active' : '' }}">
                 <i class="bi bi-geo-alt"></i> إدارة المواقع
             </a>
+            @role('admin')
             <a href="{{ route('companies.index') }}" class="{{ request()->is('companies*') ? 'active' : '' }}">
                 <i class="bi bi-building"></i> إدارة الشركات
             </a>
             <a href="{{ route('subscriptions.index') }}" class="{{ request()->is('subscriptions*') ? 'active' : '' }}">
                 <i class="bi bi-credit-card"></i> اشتراكات الشركات
             </a>
+            @endrole
         </div>
     </div>
 
@@ -99,15 +101,19 @@
             <i class="bi bi-chevron-down arrow" id="arrow-data"></i>
         </div>
         <div class="menu-items" id="menu-data">
+            @role('admin')
             <a href="{{ route('packages.index') }}" class="{{ request()->is('packages*') ? 'active' : '' }}">
-                <i class="bi bi-box-seam"></i> الباقات
+                <i class="bi bi-box-seam"></i> باقات الاشتراك
             </a>
+            @endrole
             <a href="{{ route('surveys.index') }}" class="{{ request()->is('surveys*') ? 'active' : '' }}">
                 <i class="bi bi-clipboard-data"></i> الاستبيانات
             </a>
+            @role('admin')
             <a href="{{ route('imports.index') }}" class="{{ request()->is('imports*') ? 'active' : '' }}">
                 <i class="bi bi-file-earmark-arrow-up"></i> استيراد البيانات
             </a>
+            @endrole
         </div>
     </div>
 
@@ -181,6 +187,7 @@
             <a href="{{ route('users.index') }}" class="{{ request()->is('users*') ? 'active' : '' }}">
                 <i class="bi bi-person-gear"></i> إدارة المستخدمين
             </a>
+            @role('admin')
             <a href="{{ route('roles.index') }}" class="{{ request()->is('roles*') ? 'active' : '' }}">
                 <i class="bi bi-shield-lock"></i> الأدوار والصلاحيات
             </a>
@@ -196,6 +203,7 @@
             <a href="{{ route('lookup-groups.index') }}" class="{{ request()->is('lookup-groups*') ? 'active' : '' }}">
                 <i class="bi bi-list-ul"></i> التعريفات الاستعلامية
             </a>
+            @endrole
         </div>
     </div>
 

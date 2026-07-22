@@ -6,7 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Task extends Model
 {
+    use \App\Models\Concerns\BelongsToCompany;
+
     protected $fillable = [
+        'company_id',
         'title', 'description', 'employee_id', 'assigned_by',
         'due_date', 'status', 'priority', 'notes', 'completed_at',
     ];

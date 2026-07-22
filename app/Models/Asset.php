@@ -6,7 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Asset extends Model
 {
+    use \App\Models\Concerns\BelongsToCompany;
+
     protected $fillable = [
+        'company_id',
         'name', 'type', 'serial_number', 'model', 'brand',
         'status', 'notes', 'purchase_date', 'purchase_price',
     ];

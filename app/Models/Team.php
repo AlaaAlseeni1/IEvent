@@ -6,7 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Team extends Model
 {
-    protected $fillable = ['name', 'supervisor_id', 'region_id', 'notes', 'is_active'];
+    use \App\Models\Concerns\BelongsToCompany;
+
+    protected $fillable = [
+        'company_id','name', 'supervisor_id', 'region_id', 'notes', 'is_active'];
 
     public function supervisor()
     {

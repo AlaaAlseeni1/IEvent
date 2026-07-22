@@ -7,12 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 class Subscription extends Model
 {
     protected $fillable = [
-        'company_id', 'package_id', 'starts_at', 'ends_at', 'price', 'status', 'notes',
+        'company_id', 'package_id', 'starts_at', 'ends_at', 'price',
+        'payment_method', 'paid_at', 'status', 'notes',
     ];
 
     protected $casts = [
         'starts_at' => 'date',
         'ends_at'   => 'date',
+        'paid_at'   => 'date',
         'price'     => 'decimal:2',
     ];
 
@@ -43,6 +45,7 @@ class Subscription extends Model
             'active'    => 'نشط',
             'expired'   => 'منتهي',
             'cancelled' => 'ملغي',
+            'suspended' => 'معلق',
             default     => $this->status,
         };
     }

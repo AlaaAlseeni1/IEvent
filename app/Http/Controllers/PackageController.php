@@ -44,15 +44,16 @@ class PackageController extends Controller
     {
         $data = $request->validate([
             'name'        => 'required|string|max:255',
+            'type'        => 'required|in:weekly,monthly,quarterly,yearly',
             'company_id'  => 'nullable|exists:companies,id',
             'price'       => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
             'status'      => 'required|in:active,inactive',
             'services'    => 'nullable|array',
-            'services.*'  => 'string|max:255',
+            'services.*'  => 'nullable|string|max:255',
         ]);
 
-        $data['services'] = array_filter($request->input('services', []), fn($s) => trim($s) !== '');
+        $data['services'] = array_filter($request->input('services', []), fn($s) => $s !== null && trim($s) !== '');
 
         Package::create($data);
 
@@ -69,15 +70,16 @@ class PackageController extends Controller
     {
         $data = $request->validate([
             'name'        => 'required|string|max:255',
+            'type'        => 'required|in:weekly,monthly,quarterly,yearly',
             'company_id'  => 'nullable|exists:companies,id',
             'price'       => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
             'status'      => 'required|in:active,inactive',
             'services'    => 'nullable|array',
-            'services.*'  => 'string|max:255',
+            'services.*'  => 'nullable|string|max:255',
         ]);
 
-        $data['services'] = array_filter($request->input('services', []), fn($s) => trim($s) !== '');
+        $data['services'] = array_filter($request->input('services', []), fn($s) => $s !== null && trim($s) !== '');
 
         $package->update($data);
 

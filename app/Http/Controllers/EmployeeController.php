@@ -91,6 +91,7 @@ class EmployeeController extends Controller
             'email'       => $email,
             'password'    => bcrypt($password),
             'employee_id' => $employee->id,
+            'company_id'  => $employee->company_id,
         ]);
 
         \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'employee']);

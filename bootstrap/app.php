@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'employee' => \App\Http\Middleware\EmployeeOnly::class,
             'company' => \App\Http\Middleware\CompanyOnly::class,
             'staff' => \App\Http\Middleware\StaffOnly::class,
+            'subscribed' => \App\Http\Middleware\EnsureSubscriptionActive::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

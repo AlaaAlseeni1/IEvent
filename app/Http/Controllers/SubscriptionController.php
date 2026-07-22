@@ -23,7 +23,14 @@ class SubscriptionController extends Controller
         $subscriptions = $query->latest()->paginate(15)->withQueryString();
         $companies     = Company::orderBy('name')->get();
 
-        return view('subscriptions.index', compact('subscriptions', 'companies'));
+        $stats = [
+            'active'    => Subscription::where('status', 'active')->whereDate('ends_at', '>=', today())->count(),
+            'expired'   => Subscription::where('status', 'active')->whereDate('ends_at', '<', today())->count()
+                         + Subscription::where('status', 'expired')->count(),
+            'suspended' => Subscription::where('status', 'suspended')->count(),
+        ];
+
+        return view('subscriptions.index', compact('subscriptions', 'companies', 'stats'));
     }
 
     public function create()
@@ -36,13 +43,25 @@ class SubscriptionController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'company_id' => 'required|exists:companies,id',
-            'package_id' => 'nullable|exists:packages,id',
-            'starts_at'  => 'required|date',
-            'ends_at'    => 'required|date|after_or_equal:starts_at',
-            'price'      => 'nullable|numeric|min:0',
-            'notes'      => 'nullable|string',
+            'company_id'     => 'required|exists:companies,id',
+            'package_id'     => 'nullable|exists:packages,id',
+            'starts_at'      => 'required|date',
+            'ends_at'        => 'nullable|date|after_or_equal:starts_at',
+            'price'          => 'nullable|numeric|min:0',
+            'payment_method' => 'nullable|string|max:100',
+            'paid_at'        => 'nullable|date',
+            'notes'          => 'nullable|string',
         ]);
+
+        // بدون تاريخ نهاية: تُحسب المدة تلقائياً من نوع الباقة
+        if (empty($data['ends_at'])) {
+            $package = $data['package_id'] ? Package::find($data['package_id']) : null;
+            if (!$package) {
+                return back()->withInput()->withErrors(['ends_at' => 'حدد تاريخ النهاية أو اختر باقة لتُحسب المدة تلقائياً.']);
+            }
+            $data['ends_at'] = $package->endDateFrom(\Illuminate\Support\Carbon::parse($data['starts_at']));
+            $data['price']   = $data['price'] ?? $package->price;
+        }
 
         $data['status'] = 'active';
         Subscription::create($data);
@@ -60,12 +79,14 @@ class SubscriptionController extends Controller
     public function update(Request $request, Subscription $subscription)
     {
         $data = $request->validate([
-            'package_id' => 'nullable|exists:packages,id',
-            'starts_at'  => 'required|date',
-            'ends_at'    => 'required|date|after_or_equal:starts_at',
-            'price'      => 'nullable|numeric|min:0',
-            'status'     => 'required|in:active,expired,cancelled',
-            'notes'      => 'nullable|string',
+            'package_id'     => 'nullable|exists:packages,id',
+            'starts_at'      => 'required|date',
+            'ends_at'        => 'required|date|after_or_equal:starts_at',
+            'price'          => 'nullable|numeric|min:0',
+            'payment_method' => 'nullable|string|max:100',
+            'paid_at'        => 'nullable|date',
+            'status'         => 'required|in:active,expired,cancelled,suspended',
+            'notes'          => 'nullable|string',
         ]);
 
         $subscription->update($data);
@@ -80,24 +101,38 @@ class SubscriptionController extends Controller
         return back()->with('success', 'تم إلغاء الاشتراك');
     }
 
-    // تجديد اشتراك: إنشاء اشتراك جديد يبدأ من نهاية السابق (أو اليوم إن انتهى)
+    // تعليق / إعادة تفعيل
+    public function suspend(Subscription $subscription)
+    {
+        $subscription->update(['status' => 'suspended']);
+        return back()->with('success', 'تم تعليق الاشتراك');
+    }
+
+    public function resume(Subscription $subscription)
+    {
+        $subscription->update(['status' => 'active']);
+        return back()->with('success', 'تم إعادة تفعيل الاشتراك');
+    }
+
+    // تجديد: اشتراك جديد بمدة باقته يبدأ من نهاية السابق (أو اليوم إن انتهى)
     public function renew(Request $request, Subscription $subscription)
     {
-        $request->validate(['months' => 'required|integer|min:1|max:36']);
-
-        $start = $subscription->ends_at->gte(today()) ? $subscription->ends_at->addDay() : today();
+        $start   = $subscription->ends_at->gte(today()) ? $subscription->ends_at->copy()->addDay() : today();
+        $package = $subscription->package;
+        $end     = $package ? $package->endDateFrom($start) : $start->copy()->addYear();
 
         Subscription::create([
-            'company_id' => $subscription->company_id,
-            'package_id' => $subscription->package_id,
-            'starts_at'  => $start,
-            'ends_at'    => $start->copy()->addMonths((int) $request->months),
-            'price'      => $subscription->price,
-            'status'     => 'active',
-            'notes'      => 'تجديد للاشتراك #' . $subscription->id,
+            'company_id'     => $subscription->company_id,
+            'package_id'     => $subscription->package_id,
+            'starts_at'      => $start,
+            'ends_at'        => $end,
+            'price'          => $subscription->price,
+            'payment_method' => $request->input('payment_method', $subscription->payment_method),
+            'paid_at'        => today(),
+            'status'         => 'active',
+            'notes'          => 'تجديد للاشتراك #' . $subscription->id,
         ]);
 
-        // الاشتراك القديم يُعلَّم منتهياً إن كان ما زال نشطاً ومنتهي التاريخ
         if ($subscription->status === 'active' && $subscription->ends_at->lt(today())) {
             $subscription->update(['status' => 'expired']);
         }

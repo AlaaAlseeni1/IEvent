@@ -6,7 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Employee extends Model
 {
+    use \App\Models\Concerns\BelongsToCompany;
+
     protected $fillable = [
+        'company_id',
         'name',
         'employee_number',
         'phone',

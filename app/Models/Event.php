@@ -6,7 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Event extends Model
 {
+    use \App\Models\Concerns\BelongsToCompany;
+
     protected $fillable = [
+        'company_id',
         'name', 'type', 'start_date', 'end_date', 'location_id',
         'status', 'description', 'budget', 'manager_id',
     ];

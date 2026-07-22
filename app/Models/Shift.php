@@ -6,7 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Shift extends Model
 {
-    protected $fillable = ['name', 'start_time', 'end_time', 'days', 'notes', 'is_active'];
+    use \App\Models\Concerns\BelongsToCompany;
+
+    protected $fillable = [
+        'company_id','name', 'start_time', 'end_time', 'days', 'notes', 'is_active'];
 
     protected $casts = ['days' => 'array'];
 

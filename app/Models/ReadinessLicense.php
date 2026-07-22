@@ -6,7 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class ReadinessLicense extends Model
 {
+    use \App\Models\Concerns\BelongsToCompany;
+
     protected $fillable = [
+        'company_id',
         'employee_id', 'issued_by', 'withdrawn_by', 'issued_at', 'expires_at',
         'status', 'notes', 'withdrawal_reason', 'withdrawn_at',
     ];

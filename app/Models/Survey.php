@@ -6,7 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Survey extends Model
 {
-    protected $fillable = ['title', 'description', 'status', 'created_by', 'starts_at', 'ends_at'];
+    use \App\Models\Concerns\BelongsToCompany;
+
+    protected $fillable = [
+        'company_id','title', 'description', 'status', 'created_by', 'starts_at', 'ends_at'];
 
     protected $casts = ['starts_at' => 'datetime', 'ends_at' => 'datetime'];
 

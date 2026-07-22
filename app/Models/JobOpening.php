@@ -6,7 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class JobOpening extends Model
 {
+    use \App\Models\Concerns\BelongsToCompany;
+
     protected $fillable = [
+        'company_id',
         'title', 'department', 'description', 'deadline',
         'max_applicants', 'is_active', 'fields',
     ];
