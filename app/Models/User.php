@@ -16,6 +16,7 @@ class User extends Authenticatable
         'email',
         'password',
         'employee_id',
+        'company_id',
     ];
 
     protected $hidden = [
@@ -35,5 +36,11 @@ class User extends Authenticatable
     public function employee()
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    // ربط المستخدم بالشركة
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 }

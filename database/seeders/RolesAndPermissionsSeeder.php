@@ -45,5 +45,8 @@ class RolesAndPermissionsSeeder extends Seeder
         $employee->syncPermissions([
             'attendance.view',
         ]);
+
+        // دور الشركة (للدخول إلى بوابة الشركات)
+        Role::firstOrCreate(['name' => 'company']);
     }
 }

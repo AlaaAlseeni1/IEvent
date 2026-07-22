@@ -48,6 +48,9 @@ class EmployeeController extends Controller
 
         $employee = Employee::create($data);
 
+        // إنشاء حساب دخول للموظف تلقائياً
+        $account = $this->createUserForEmployee($employee);
+
         if ($request->custom_fields) {
             foreach ($request->custom_fields as $fieldId => $value) {
                 DB::table('custom_field_values')->insert([
@@ -61,7 +64,55 @@ class EmployeeController extends Controller
             }
         }
 
-        return redirect()->route('employees.index')->with('success', 'تم إضافة الموظف بنجاح');
+        $redirect = redirect()->route('employees.show', $employee)->with('success', 'تم إضافة الموظف بنجاح');
+        if ($account) {
+            $redirect->with('password_reset', $account);
+        }
+        return $redirect;
+    }
+
+    // إنشاء حساب مستخدم مرتبط بالموظف (البريد أو رقم الموظف + كلمة مرور من الجوال)
+    private function createUserForEmployee(Employee $employee): ?array
+    {
+        if ($employee->user) {
+            return null;
+        }
+
+        $email = $employee->email ?: $employee->employee_number . '@ievent.local';
+
+        if (User::where('email', $email)->exists()) {
+            return null;
+        }
+
+        $password = ltrim($employee->phone ?? '', '0') ?: ('P@ss' . rand(10000, 99999));
+
+        $user = User::create([
+            'name'        => $employee->name,
+            'email'       => $email,
+            'password'    => bcrypt($password),
+            'employee_id' => $employee->id,
+        ]);
+
+        \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'employee']);
+        $user->assignRole('employee');
+
+        return ['email' => $email, 'password' => $password];
+    }
+
+    // تفعيل حساب دخول لموظف حالي
+    public function createAccount(Employee $employee)
+    {
+        if ($employee->user) {
+            return back()->with('error', 'يوجد حساب مرتبط بهذا الموظف مسبقاً');
+        }
+
+        $account = $this->createUserForEmployee($employee);
+
+        if (!$account) {
+            return back()->with('error', 'تعذر إنشاء الحساب: البريد مستخدم مسبقاً');
+        }
+
+        return back()->with('password_reset', $account);
     }
 
     public function show(Employee $employee)

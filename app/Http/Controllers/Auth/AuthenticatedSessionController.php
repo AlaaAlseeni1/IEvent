@@ -28,12 +28,16 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        // توجيه الموظف للبوابة، والباقي للوحة التحكم
-if (Auth::user()->hasRole('employee')) {
-    return redirect()->route('portal.dashboard');
-}
+        // توجيه كل دور لبوابته: الموظف للبوابة، الشركة لبوابة الشركات، والباقي للوحة التحكم
+        if (Auth::user()->hasRole('employee')) {
+            return redirect()->route('portal.dashboard');
+        }
 
-return redirect()->intended(route('dashboard', absolute: false));
+        if (Auth::user()->hasRole('company')) {
+            return redirect()->route('company.dashboard');
+        }
+
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 
     /**

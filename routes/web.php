@@ -34,6 +34,8 @@ use App\Http\Controllers\ImportController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\JobOpeningController;
+use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\CompanyPortalController;
 use App\Models\Contract;
 use Illuminate\Support\Facades\Route;
 
@@ -86,9 +88,9 @@ Route::get('/dashboard', function () {
         'latestEmployees', 'todayAttendance', 'latestContracts',
         'attendanceChart', 'deptChart'
     ));
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'verified', 'staff'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'staff'])->group(function () {
     // البروفايل
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -98,6 +100,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('employees', EmployeeController::class);
     Route::get('employees/{employee}/data', [EmployeeController::class, 'data'])->name('employees.data');
     Route::post('employees/{employee}/reset-password', [EmployeeController::class, 'resetPassword'])->name('employees.reset-password');
+    Route::post('employees/{employee}/create-account', [EmployeeController::class, 'createAccount'])->name('employees.create-account');
     Route::resource('attendance', AttendanceController::class);
 
     // المستخدمين
@@ -142,6 +145,13 @@ Route::middleware('auth')->group(function () {
 
     // الشركات
     Route::resource('companies', CompanyController::class)->except(['show']);
+    Route::post('companies/{company}/create-user', [CompanyController::class, 'createUser'])->name('companies.create-user');
+    Route::post('companies/{company}/reset-user-password', [CompanyController::class, 'resetUserPassword'])->name('companies.reset-user-password');
+
+    // اشتراكات الشركات
+    Route::resource('subscriptions', SubscriptionController::class)->except(['show']);
+    Route::post('subscriptions/{subscription}/cancel', [SubscriptionController::class, 'cancel'])->name('subscriptions.cancel');
+    Route::post('subscriptions/{subscription}/renew', [SubscriptionController::class, 'renew'])->name('subscriptions.renew');
 
     // الإسنادات
     Route::resource('assignments', AssignmentController::class);
@@ -246,6 +256,13 @@ Route::middleware(['auth', 'employee'])->prefix('portal')->name('portal.')->grou
     // الدعم الفني
     Route::get('/support', [EmployeePortalController::class, 'support'])->name('support');
     Route::post('/support', [EmployeePortalController::class, 'createTicket'])->name('support.store');
+});
+
+// بوابة الشركة
+Route::middleware(['auth', 'company'])->prefix('company')->name('company.')->group(function () {
+    Route::get('/', [CompanyPortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/assignments', [CompanyPortalController::class, 'assignments'])->name('assignments');
+    Route::get('/subscription', [CompanyPortalController::class, 'subscription'])->name('subscription');
 });
 
 require __DIR__.'/auth.php';

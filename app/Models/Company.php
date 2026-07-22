@@ -15,4 +15,30 @@ class Company extends Model
     {
         return $this->hasMany(Assignment::class);
     }
+
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
+
+    public function packages()
+    {
+        return $this->hasMany(Package::class);
+    }
+
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    // الاشتراك الساري حالياً (مفعّل وضمن الفترة)
+    public function currentSubscription(): ?Subscription
+    {
+        return $this->subscriptions()
+            ->where('status', 'active')
+            ->whereDate('starts_at', '<=', today())
+            ->whereDate('ends_at', '>=', today())
+            ->orderByDesc('ends_at')
+            ->first();
+    }
 }

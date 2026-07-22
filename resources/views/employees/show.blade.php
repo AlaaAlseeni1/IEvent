@@ -70,6 +70,9 @@
                 <span style="font-weight:600"><i class="bi bi-person-lock"></i> حساب النظام</span>
             </div>
             <div class="card-body" style="padding:16px 20px">
+                @if(session('error'))
+                <div class="alert alert-danger" style="font-size:13px;padding:10px 14px">{{ session('error') }}</div>
+                @endif
                 @if(session('password_reset'))
                 <div class="alert alert-success" style="font-size:13px;padding:10px 14px">
                     <i class="bi bi-check-circle me-1"></i> تم إعادة تعيين كلمة المرور<br>
@@ -102,6 +105,12 @@
                     <i class="bi bi-person-x" style="font-size:24px;display:block;margin-bottom:6px"></i>
                     لا يوجد حساب مرتبط
                 </div>
+                <form action="{{ route('employees.create-account', $employee->id) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="btn btn-save" style="font-size:12px;padding:5px 14px;width:100%">
+                        <i class="bi bi-person-plus me-1"></i>تفعيل حساب الدخول
+                    </button>
+                </form>
                 @endif
             </div>
         </div>

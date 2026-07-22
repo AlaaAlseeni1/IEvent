@@ -18,6 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'employee' => \App\Http\Middleware\EmployeeOnly::class,
+            'company' => \App\Http\Middleware\CompanyOnly::class,
+            'staff' => \App\Http\Middleware\StaffOnly::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

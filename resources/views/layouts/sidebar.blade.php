@@ -86,6 +86,9 @@
             <a href="{{ route('companies.index') }}" class="{{ request()->is('companies*') ? 'active' : '' }}">
                 <i class="bi bi-building"></i> إدارة الشركات
             </a>
+            <a href="{{ route('subscriptions.index') }}" class="{{ request()->is('subscriptions*') ? 'active' : '' }}">
+                <i class="bi bi-credit-card"></i> اشتراكات الشركات
+            </a>
         </div>
     </div>
 
