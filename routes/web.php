@@ -43,6 +43,14 @@ Route::get('/up', function () {
     return response('OK', 200);
 });
 
+// فتح /logout مباشرة من المتصفح (GET) يسجّل الخروج بدل خطأ 405
+Route::get('/logout', function (\Illuminate\Http\Request $request) {
+    \Illuminate\Support\Facades\Auth::guard('web')->logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+    return redirect()->route('login');
+});
+
 Route::get('/', function () {
     if (auth()->check()) {
         return redirect()->route('dashboard');
