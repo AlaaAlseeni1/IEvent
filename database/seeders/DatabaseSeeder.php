@@ -15,6 +15,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        setPermissionsTeamId(0); // مستخدمو المنصة العامة
+
         $this->call([
             SettingsSeeder::class,
             RolesAndPermissionsSeeder::class,

@@ -7,6 +7,15 @@ use Illuminate\Http\Request;
 
 class LookupGroupController extends Controller
 {
+    // مستخدم الشركة لا يعدّل إلا تعريفات شركته (العامة للمشرف العام فقط)
+    private function guardOwnership(LookupGroup $group): void
+    {
+        $user = auth()->user();
+        if ($user->company_id && $group->company_id !== $user->company_id) {
+            abort(403, 'لا يمكنك تعديل التعريفات العامة، يمكنك إضافة تعريفات خاصة بشركتك');
+        }
+    }
+
     /**
      * عرض قائمة المجموعات والقيم
      */
@@ -43,6 +52,8 @@ class LookupGroupController extends Controller
      */
     public function update(Request $request, LookupGroup $lookupGroup)
     {
+        $this->guardOwnership($lookupGroup);
+
         $data = $request->validate([
             'name_ar' => 'required|string',
             'name_en' => 'nullable|string',
@@ -62,6 +73,8 @@ class LookupGroupController extends Controller
      */
     public function destroy(LookupGroup $lookupGroup)
     {
+        $this->guardOwnership($lookupGroup);
+
         if ($lookupGroup->is_system) {
             return back()->with('error', 'لا يمكن حذف مجموعة نظامية');
         }

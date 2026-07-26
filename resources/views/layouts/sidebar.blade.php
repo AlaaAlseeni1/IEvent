@@ -187,10 +187,15 @@
             <a href="{{ route('users.index') }}" class="{{ request()->is('users*') ? 'active' : '' }}">
                 <i class="bi bi-person-gear"></i> إدارة المستخدمين
             </a>
-            @role('admin')
+            @can('roles.view')
             <a href="{{ route('roles.index') }}" class="{{ request()->is('roles*') ? 'active' : '' }}">
                 <i class="bi bi-shield-lock"></i> الأدوار والصلاحيات
             </a>
+            @endcan
+            <a href="{{ route('lookup-groups.index') }}" class="{{ request()->is('lookup-groups*') ? 'active' : '' }}">
+                <i class="bi bi-list-ul"></i> الإدارات والتعريفات
+            </a>
+            @role('admin')
             <a href="{{ route('modules.index') }}" class="{{ request()->is('modules*') ? 'active' : '' }}">
                 <i class="bi bi-grid-3x3-gap"></i> إدارة الوحدات
             </a>
@@ -199,9 +204,6 @@
             </a>
             <a href="{{ route('custom-fields.index') }}" class="{{ request()->is('custom-fields*') ? 'active' : '' }}">
                 <i class="bi bi-input-cursor-text"></i> الحقول المخصصة
-            </a>
-            <a href="{{ route('lookup-groups.index') }}" class="{{ request()->is('lookup-groups*') ? 'active' : '' }}">
-                <i class="bi bi-list-ul"></i> التعريفات الاستعلامية
             </a>
             @endrole
         </div>

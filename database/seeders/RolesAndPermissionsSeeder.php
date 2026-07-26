@@ -5,12 +5,16 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
     public function run(): void
     {
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
+        // سياق المنصة العامة (الأدوار هنا قوالب عامة متاحة لكل الشركات)
+        setPermissionsTeamId(0);
 
         $permissions = [
             // الموظفين
@@ -19,6 +23,20 @@ class RolesAndPermissionsSeeder extends Seeder
             'contracts.view', 'contracts.create', 'contracts.edit', 'contracts.delete',
             // الحضور
             'attendance.view', 'attendance.create', 'attendance.edit', 'attendance.delete',
+            // المهام
+            'tasks.view', 'tasks.create', 'tasks.edit', 'tasks.delete',
+            // العهد
+            'assets.view', 'assets.create', 'assets.edit', 'assets.delete',
+            // الأحداث
+            'events.view', 'events.create', 'events.edit', 'events.delete',
+            // الزيارات
+            'visits.view', 'visits.create', 'visits.edit', 'visits.delete',
+            // التقييمات
+            'evaluations.view', 'evaluations.create', 'evaluations.edit', 'evaluations.delete',
+            // الدعم الفني
+            'support.view', 'support.edit',
+            // التقارير
+            'reports.view',
             // المستخدمين
             'users.view', 'users.create', 'users.edit', 'users.delete',
             // الأدوار
@@ -39,6 +57,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'employees.view', 'employees.create', 'employees.edit',
             'contracts.view', 'contracts.create', 'contracts.edit',
             'attendance.view', 'attendance.create', 'attendance.edit',
+            'tasks.view', 'reports.view',
         ]);
 
         $employee = Role::firstOrCreate(['name' => 'employee']);
@@ -55,19 +74,28 @@ class RolesAndPermissionsSeeder extends Seeder
             'employees.view', 'employees.create', 'employees.edit', 'employees.delete',
             'contracts.view', 'contracts.create', 'contracts.edit', 'contracts.delete',
             'attendance.view', 'attendance.create', 'attendance.edit', 'attendance.delete',
+            'tasks.view', 'tasks.create', 'tasks.edit', 'tasks.delete',
+            'assets.view', 'assets.create', 'assets.edit', 'assets.delete',
+            'events.view', 'events.create', 'events.edit', 'events.delete',
+            'visits.view', 'visits.create', 'visits.edit', 'visits.delete',
+            'evaluations.view', 'evaluations.create', 'evaluations.edit', 'evaluations.delete',
+            'support.view', 'support.edit', 'reports.view',
             'users.view', 'users.create', 'users.edit', 'users.delete',
+            'roles.view', 'roles.create', 'roles.edit', 'roles.delete',
         ]);
 
         // مشرف ومدير إدارة (أدوار داخل الشركة)
         $supervisor = Role::firstOrCreate(['name' => 'supervisor']);
         $supervisor->syncPermissions([
             'employees.view', 'attendance.view', 'attendance.create', 'attendance.edit',
+            'tasks.view', 'visits.view',
         ]);
 
         $deptManager = Role::firstOrCreate(['name' => 'department_manager']);
         $deptManager->syncPermissions([
             'employees.view', 'employees.create', 'employees.edit',
             'contracts.view', 'attendance.view', 'attendance.create', 'attendance.edit',
+            'tasks.view', 'tasks.create', 'tasks.edit', 'reports.view',
         ]);
     }
 }

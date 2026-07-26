@@ -28,6 +28,9 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // تحديث سياق الشركة بعد الدخول (كان مضبوطاً كضيف في بداية الطلب)
+        setPermissionsTeamId(Auth::user()->company_id ?? 0);
+
         // توجيه كل دور لبوابته: الموظف للبوابة، الشركة لبوابة الشركات، والباقي للوحة التحكم
         if (Auth::user()->hasRole('employee')) {
             return redirect()->route('portal.dashboard');

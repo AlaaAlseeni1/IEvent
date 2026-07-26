@@ -94,8 +94,10 @@ class EmployeeController extends Controller
             'company_id'  => $employee->company_id,
         ]);
 
-        \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'employee']);
+        // منح الدور ضمن سياق شركة الموظف
+        setPermissionsTeamId($user->company_id ?? 0);
         $user->assignRole('employee');
+        setPermissionsTeamId(auth()->user()?->company_id ?? 0);
 
         return ['email' => $email, 'password' => $password];
     }

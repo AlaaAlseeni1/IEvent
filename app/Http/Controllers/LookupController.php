@@ -8,6 +8,15 @@ use Illuminate\Http\Request;
 
 class LookupController extends Controller
 {
+    // مستخدم الشركة لا يعدّل إلا قيم شركته (العامة للمشرف العام فقط)
+    private function guardOwnership(Lookup $lookup): void
+    {
+        $user = auth()->user();
+        if ($user->company_id && $lookup->company_id !== $user->company_id) {
+            abort(403, 'لا يمكنك تعديل القيم العامة، يمكنك إضافة قيم خاصة بشركتك');
+        }
+    }
+
     /**
      * إضافة قيمة جديدة لمجموعة
      */
@@ -37,6 +46,8 @@ class LookupController extends Controller
      */
     public function update(Request $request, Lookup $lookup)
     {
+        $this->guardOwnership($lookup);
+
         $data = $request->validate([
             'value_ar' => 'required|string',
             'value_en' => 'nullable|string',
@@ -57,6 +68,8 @@ class LookupController extends Controller
      */
     public function destroy(Lookup $lookup)
     {
+        $this->guardOwnership($lookup);
+
         $groupKey = $lookup->group->key;
         $lookup->delete();
 

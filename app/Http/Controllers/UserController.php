@@ -32,7 +32,12 @@ class UserController extends Controller
     private function allowedRoles()
     {
         if ($this->isCompanyAdmin()) {
-            return Role::whereIn('name', self::COMPANY_ROLES)->get();
+            // القوالب العامة + الأدوار المخصصة لشركته
+            return Role::where(function ($q) {
+                    $q->whereNull('company_id')->whereIn('name', self::COMPANY_ROLES);
+                })
+                ->orWhere('company_id', auth()->user()->company_id)
+                ->get();
         }
         return Role::all();
     }
@@ -46,7 +51,7 @@ class UserController extends Controller
 
     private function guardRole(string $role): void
     {
-        if ($this->isCompanyAdmin() && !in_array($role, self::COMPANY_ROLES)) {
+        if ($this->isCompanyAdmin() && !$this->allowedRoles()->pluck('name')->contains($role)) {
             abort(403, 'لا يمكنك منح هذا الدور');
         }
     }
@@ -83,7 +88,11 @@ class UserController extends Controller
             'company_id'  => $this->isCompanyAdmin() ? auth()->user()->company_id : $request->company_id,
         ]);
 
+        // منح الدور ضمن سياق شركة المستخدم الجديد
+        setPermissionsTeamId($user->company_id ?? 0);
         $user->assignRole($request->role);
+        setPermissionsTeamId(auth()->user()?->company_id ?? 0);
+
         return redirect()->route('users.index')->with('success', 'تم إضافة المستخدم بنجاح');
     }
 
@@ -123,7 +132,11 @@ class UserController extends Controller
         }
 
         $user->update($data);
+
+        // مزامنة الدور ضمن سياق شركة المستخدم المستهدف
+        setPermissionsTeamId($user->company_id ?? 0);
         $user->syncRoles([$request->role]);
+        setPermissionsTeamId(auth()->user()?->company_id ?? 0);
 
         return redirect()->route('users.index')->with('success', 'تم تعديل المستخدم بنجاح');
     }

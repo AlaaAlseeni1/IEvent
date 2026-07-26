@@ -119,11 +119,15 @@ Route::middleware(['auth', 'staff', 'subscribed'])->group(function () {
     // المستخدمين
     Route::resource('users', UserController::class);
 
+    // الأدوار والصلاحيات (المشرف العام + مديرو الشركات ضمن شركاتهم)
+    Route::resource('roles', RoleController::class)->middleware('permission:roles.view');
+
+    // التعريفات والإدارات (المشرف العام يدير العامة، ومدير الشركة يضيف الخاصة بشركته)
+    Route::resource('lookup-groups', LookupGroupController::class)->except(['create', 'show', 'edit']);
+    Route::resource('lookups', LookupController::class)->only(['store', 'update', 'destroy']);
+
     // إعدادات المنصة (المشرف العام فقط)
     Route::middleware('role:admin')->group(function () {
-        // الأدوار والصلاحيات
-        Route::resource('roles', RoleController::class);
-
         // الإدارات (Modules)
         Route::resource('modules', ModuleController::class);
         Route::patch('modules/{module}/toggle', [ModuleController::class, 'toggle'])->name('modules.toggle');
@@ -134,10 +138,6 @@ Route::middleware(['auth', 'staff', 'subscribed'])->group(function () {
 
         // الحقول المخصصة
         Route::resource('custom-fields', CustomFieldController::class);
-
-        // التعريفات الإستعلامية (Lookups)
-        Route::resource('lookup-groups', LookupGroupController::class)->except(['create', 'show', 'edit']);
-        Route::resource('lookups', LookupController::class)->only(['store', 'update', 'destroy']);
     });
 
     // العقود

@@ -74,8 +74,10 @@ class CompanyController extends Controller
             'company_id' => $company->id,
         ]);
 
-        Role::firstOrCreate(['name' => 'company_admin']);
+        // منح الدور ضمن سياق الشركة نفسها
+        setPermissionsTeamId($company->id);
         $user->assignRole('company_admin');
+        setPermissionsTeamId(auth()->user()?->company_id ?? 0);
 
         return back()->with('company_credentials', [
             'company'  => $company->name,

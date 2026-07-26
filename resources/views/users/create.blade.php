@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'تعديل مستخدم')
+@section('title', 'إضافة مستخدم')
 
 @section('content')
 
 <div class="top-header">
-    <h4>تعديل بيانات المستخدم</h4>
+    <h4>إضافة مستخدم جديد</h4>
     <a href="{{ route('users.index') }}" class="btn btn-back">
         <i class="bi bi-arrow-right"></i> رجوع
     </a>
@@ -21,29 +21,29 @@
 
 <div class="card">
     <div class="card-body" style="padding:25px">
-        <form action="{{ route('users.update', $user->id) }}" method="POST">
+        <form action="{{ route('users.store') }}" method="POST">
             @csrf
-            @method('PUT')
 
             <div class="section-title">بيانات المستخدم</div>
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">الاسم *</label>
-                    <input type="text" name="name" class="form-control" value="{{ $user->name }}" required>
+                    <input type="text" name="name" class="form-control" value="{{ old('name') }}" required>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">البريد الإلكتروني *</label>
-                    <input type="email" name="email" class="form-control" value="{{ $user->email }}" required>
+                    <input type="email" name="email" class="form-control" value="{{ old('email') }}" required>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">كلمة المرور (اتركها فارغة إذا ما تبغى تغيرها)</label>
-                    <input type="password" name="password" class="form-control">
+                    <label class="form-label">كلمة المرور *</label>
+                    <input type="password" name="password" class="form-control" required>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">الدور *</label>
                     <select name="role" class="form-select" required>
+                        <option value="">-- اختر الدور --</option>
                         @foreach($roles as $role)
-                            <option value="{{ $role->name }}" @if($user->hasRole($role->name)) selected @endif>
+                            <option value="{{ $role->name }}" @if(old('role') == $role->name) selected @endif>
                                 {{ $role->name }}
                             </option>
                         @endforeach
@@ -54,7 +54,7 @@
                     <select name="employee_id" class="form-select">
                         <option value="">-- بدون ربط --</option>
                         @foreach($employees as $employee)
-                            <option value="{{ $employee->id }}" @if($user->employee_id == $employee->id) selected @endif>
+                            <option value="{{ $employee->id }}" @if(old('employee_id') == $employee->id) selected @endif>
                                 {{ $employee->name }} - {{ $employee->employee_number }}
                             </option>
                         @endforeach
@@ -64,7 +64,7 @@
 
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-save">
-                    <i class="bi bi-check-lg"></i> حفظ التعديل
+                    <i class="bi bi-check-lg"></i> حفظ المستخدم
                 </button>
                 <a href="{{ route('users.index') }}" class="btn btn-back">إلغاء</a>
             </div>

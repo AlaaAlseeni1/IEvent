@@ -57,10 +57,13 @@
                     <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#addLookupModal">
                         <i class="bi bi-plus-lg"></i> إضافة قيمة
                     </button>
+                    @php($canManageGroup = auth()->user()->company_id ? ($selectedGroup->company_id === auth()->user()->company_id) : true)
+                    @if($canManageGroup)
                     <button class="btn btn-edit" data-bs-toggle="modal" data-bs-target="#editGroupModal">
                         <i class="bi bi-pencil"></i> تعديل المجموعة
                     </button>
-                    @if(!$selectedGroup->is_system)
+                    @endif
+                    @if(!$selectedGroup->is_system && $canManageGroup)
                     <form action="{{ route('lookup-groups.destroy', $selectedGroup->id) }}" method="POST" style="display:inline">
                         @csrf
                         @method('DELETE')
@@ -71,6 +74,11 @@
                     @endif
                 </div>
             </div>
+            @if(auth()->user()->company_id)
+            <div style="background:#eff6ff;color:#1e40af;padding:10px 16px;font-size:13px;border-bottom:1px solid #dbeafe">
+                <i class="bi bi-info-circle"></i> القيم المعلّمة بـ«عام» تُدار من قِبل المشرف العام. يمكنك إضافة قيم خاصة بشركتك فقط، وتظهر لك ولموظفيك دون غيركم.
+            </div>
+            @endif
             <div class="card-body p-0">
                 <table class="table mb-0">
                     <thead>
@@ -85,9 +93,18 @@
                     </thead>
                     <tbody>
                         @forelse($selectedGroup->lookups as $lookup)
+                        @php($isGlobalValue = is_null($lookup->company_id))
+                        @php($canManageValue = auth()->user()->company_id ? !$isGlobalValue : true)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
-                            <td style="font-weight:600">{{ $lookup->value_ar }}</td>
+                            <td style="font-weight:600">
+                                {{ $lookup->value_ar }}
+                                @if(auth()->user()->company_id && $isGlobalValue)
+                                    <span class="badge-inactive" style="background:#e0e7ff;color:#4338ca;font-size:11px">عام</span>
+                                @elseif($lookup->company_id)
+                                    <span class="badge-active" style="font-size:11px">خاص بشركتك</span>
+                                @endif
+                            </td>
                             <td>{{ $lookup->value_en ?? '-' }}</td>
                             <td>{{ $lookup->sort_order }}</td>
                             <td>
@@ -98,11 +115,15 @@
                                 @endif
                             </td>
                             <td>
+                                @if($canManageValue)
                                 <form action="{{ route('lookups.destroy', $lookup->id) }}" method="POST" style="display:inline">
                                     @csrf
                                     @method('DELETE')
                                     <button class="btn btn-delete" onclick="return confirm('متأكد؟')">حذف</button>
                                 </form>
+                                @else
+                                <span style="color:#9ca3af;font-size:12px">—</span>
+                                @endif
                             </td>
                         </tr>
                         @empty

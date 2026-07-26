@@ -7,7 +7,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LookupGroup extends Model
 {
+    use \App\Models\Concerns\SharedWithCompany;
+
     protected $fillable = [
+        'company_id',
         'key',
         'name_ar',
         'name_en',

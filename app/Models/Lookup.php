@@ -6,7 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Lookup extends Model
 {
+    use \App\Models\Concerns\SharedWithCompany;
+
     protected $fillable = [
+        'company_id',
         'group_id',
         'value_ar',
         'value_en',
