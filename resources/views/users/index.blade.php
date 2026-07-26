@@ -46,8 +46,21 @@
                             <span class="badge-active">{{ $role->name }}</span>
                         @endforeach
                     </td>
-                    <td>{{ $user->employee->name ?? '-' }}</td>
                     <td>
+                        {{ $user->employee->name ?? '-' }}
+                        @if(!$user->is_approved)
+                            <span class="badge-inactive" style="background:#fef3c7;color:#d97706;font-size:11px">بانتظار الاعتماد</span>
+                        @endif
+                    </td>
+                    <td>
+                        @unless($user->is_approved)
+                        <form action="{{ route('users.approve', $user->id) }}" method="POST" style="display:inline">
+                            @csrf
+                            <button class="btn btn-save" style="font-size:12px" onclick="return confirm('اعتماد حساب {{ $user->name }}؟')">
+                                <i class="bi bi-check-circle"></i> اعتماد
+                            </button>
+                        </form>
+                        @endunless
                         <a href="{{ route('users.edit', $user->id) }}" class="btn btn-edit">
                             <i class="bi bi-pencil"></i> تعديل
                         </a>

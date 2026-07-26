@@ -147,4 +147,12 @@ class UserController extends Controller
         $user->delete();
         return redirect()->route('users.index')->with('success', 'تم حذف المستخدم');
     }
+
+    // اعتماد حساب موظف مسجّل ذاتياً (مدير الشركة أو المشرف العام)
+    public function approve(User $user)
+    {
+        $this->guardUserAccess($user);
+        $user->update(['is_approved' => true]);
+        return back()->with('success', 'تم اعتماد حساب الموظف بنجاح');
+    }
 }

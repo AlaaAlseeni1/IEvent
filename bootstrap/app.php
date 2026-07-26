@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // ضبط سياق الشركة للصلاحيات في كل طلب
         $middleware->web(append: \App\Http\Middleware\SetPermissionsTeam::class);
+        // منع الحسابات غير المعتمدة من الوصول
+        $middleware->web(append: \App\Http\Middleware\EnsureApproved::class);
 
         $middleware->alias([
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,

@@ -62,7 +62,14 @@
                     <td style="font-size:13px">{{ $co->city ?? '-' }}</td>
                     <td>
                         @if($co->is_active) <span class="badge-active">نشطة</span>
-                        @else <span class="badge-inactive">غير نشطة</span> @endif
+                        @else
+                            <span class="badge-inactive">قيد المراجعة</span>
+                            <form action="{{ route('companies.activate', $co->id) }}" method="POST" style="display:block;margin-top:4px"
+                                  onsubmit="return confirm('تفعيل الشركة «{{ $co->name }}» وتفعيل اشتراكها؟')">
+                                @csrf
+                                <button class="btn btn-save" style="font-size:11px;padding:2px 8px"><i class="bi bi-check-circle"></i> تفعيل</button>
+                            </form>
+                        @endif
                     </td>
                     <td>
                         @if($co->users->isNotEmpty())

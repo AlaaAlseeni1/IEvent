@@ -204,7 +204,7 @@
             <!-- الشعار -->
             <div class="login-logo">
                 @if(!empty($appSettings['platform_logo']))
-                    <img src="{{ asset('storage/' . $appSettings['platform_logo']) }}" alt="Logo">
+                    <img src="{{ \Illuminate\Support\Str::startsWith($appSettings['platform_logo'], 'data:') ? $appSettings['platform_logo'] : asset('storage/' . $appSettings['platform_logo']) }}" alt="Logo">
                 @endif
                 <div class="name">{{ $appSettings['platform_name_en'] ?? 'iEvent' }}</div>
                 <div class="sub">{{ $appSettings['platform_name_ar'] ?? 'نظام الفعاليات' }}</div>
@@ -215,6 +215,13 @@
                 <h3>أهلاً بعودتك 👋</h3>
                 <p>سجّل دخولك للوصول إلى لوحة التحكم</p>
             </div>
+
+            <!-- رسالة نجاح (بعد التسجيل) -->
+            @if(session('status'))
+                <div class="alert alert-success" style="background:#dcfce7;color:#166534;border:1px solid #86efac;padding:12px 14px;border-radius:10px;font-size:13px;margin-bottom:14px">
+                    <i class="bi bi-check-circle me-1"></i> {{ session('status') }}
+                </div>
+            @endif
 
             <!-- رسائل الخطأ -->
             @if($errors->any())
@@ -267,10 +274,27 @@
                 </button>
             </form>
 
-            <div style="margin-top:20px;text-align:center;padding:14px;background:#f0f9ff;border-radius:10px;border:1px solid #bae6fd">
-                <i class="bi bi-briefcase" style="color:#0369a1;font-size:16px"></i>
-                <span style="font-size:13px;color:#374151;margin-right:6px">هل تريد الانضمام لفريقنا؟</span>
-                <a href="{{ route('apply') }}" style="color:#0f3460;font-weight:700;font-size:13px;text-decoration:none">
+            <!-- خيارات التسجيل -->
+            <div style="margin-top:22px">
+                <div style="display:flex;align-items:center;gap:10px;color:#9ca3af;font-size:12px;margin-bottom:14px">
+                    <span style="flex:1;height:1px;background:#e5e7eb"></span>
+                    ليس لديك حساب؟ سجّل الآن
+                    <span style="flex:1;height:1px;background:#e5e7eb"></span>
+                </div>
+                <div style="display:flex;gap:10px">
+                    <a href="{{ route('register.company') }}" style="flex:1;text-align:center;padding:12px;background:#0f3460;color:white;border-radius:10px;font-weight:700;font-size:13px;text-decoration:none">
+                        <i class="bi bi-building"></i><br>تسجيل كشركة
+                    </a>
+                    <a href="{{ route('register.employee') }}" style="flex:1;text-align:center;padding:12px;background:#1a1a2e;color:white;border-radius:10px;font-weight:700;font-size:13px;text-decoration:none">
+                        <i class="bi bi-person-badge"></i><br>تسجيل كموظف
+                    </a>
+                </div>
+            </div>
+
+            <div style="margin-top:16px;text-align:center;padding:12px;background:#f0f9ff;border-radius:10px;border:1px solid #bae6fd">
+                <i class="bi bi-briefcase" style="color:#0369a1;font-size:15px"></i>
+                <span style="font-size:12px;color:#374151;margin-right:6px">هل تريد الانضمام لفريقنا؟</span>
+                <a href="{{ route('apply') }}" style="color:#0f3460;font-weight:700;font-size:12px;text-decoration:none">
                     للتقديم على وظيفة اضغط هنا <i class="bi bi-arrow-left-short"></i>
                 </a>
             </div>

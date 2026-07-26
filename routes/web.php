@@ -58,6 +58,28 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+// التسجيل الذاتي (عام - بدون تسجيل دخول)
+Route::get('/register/company', [\App\Http\Controllers\RegistrationController::class, 'companyForm'])->name('register.company');
+Route::post('/register/company', [\App\Http\Controllers\RegistrationController::class, 'companyStore'])->name('register.company.store');
+Route::get('/register/employee', [\App\Http\Controllers\RegistrationController::class, 'employeeForm'])->name('register.employee');
+Route::post('/register/employee', [\App\Http\Controllers\RegistrationController::class, 'employeeStore'])->name('register.employee.store');
+
+// صفحة انتظار الموافقة
+Route::get('/account/pending', function () {
+    $user = auth()->user();
+    if (!$user) return redirect()->route('login');
+
+    if ($user->company && !$user->company->is_active) {
+        $message = 'طلب تسجيل شركتكم قيد المراجعة من الإدارة. سيتم تفعيل الحساب بعد تأكيد الاشتراك.';
+    } elseif (!$user->is_approved) {
+        $message = 'حسابك بانتظار موافقة شركتك. يرجى التواصل مع مدير شركتك لاعتماد حسابك.';
+    } else {
+        return redirect()->route('dashboard');
+    }
+
+    return view('auth.pending', compact('message'));
+})->middleware('auth')->name('account.pending');
+
 // التقديم للوظائف (عام - بدون تسجيل دخول)
 Route::get('/apply', [JobApplicationController::class, 'apply'])->name('apply');
 Route::get('/apply/thanks', [JobApplicationController::class, 'thanks'])->name('apply.thanks');
@@ -118,6 +140,7 @@ Route::middleware(['auth', 'staff', 'subscribed'])->group(function () {
 
     // المستخدمين
     Route::resource('users', UserController::class);
+    Route::post('users/{user}/approve', [UserController::class, 'approve'])->name('users.approve');
 
     // الأدوار والصلاحيات (المشرف العام + مديرو الشركات ضمن شركاتهم)
     Route::resource('roles', RoleController::class)->middleware('permission:roles.view');
@@ -162,6 +185,7 @@ Route::middleware(['auth', 'staff', 'subscribed'])->group(function () {
     // إدارة المنصة: الشركات والاشتراكات والباقات (المشرف العام فقط)
     Route::middleware('role:admin')->group(function () {
         Route::resource('companies', CompanyController::class)->except(['show']);
+        Route::post('companies/{company}/activate', [CompanyController::class, 'activate'])->name('companies.activate');
         Route::post('companies/{company}/create-user', [CompanyController::class, 'createUser'])->name('companies.create-user');
         Route::post('companies/{company}/reset-user-password', [CompanyController::class, 'resetUserPassword'])->name('companies.reset-user-password');
 

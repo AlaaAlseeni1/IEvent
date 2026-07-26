@@ -12,6 +12,12 @@
 <div class="alert alert-success">{{ session('success') }}</div>
 @endif
 
+@if($errors->any())
+<div class="alert alert-danger">
+    @foreach($errors->all() as $error)<p class="mb-0">{{ $error }}</p>@endforeach
+</div>
+@endif
+
 <form action="{{ route('settings.update') }}" method="POST" enctype="multipart/form-data">
     @csrf
 
@@ -50,11 +56,15 @@
                         <input type="color" name="settings[{{ $setting->key }}]" value="{{ $setting->value }}" class="form-control" style="height: 45px">
                     @elseif($setting->type == 'image')
                         @if($setting->value)
-                            <div class="mb-2">
-                                <img src="{{ asset('storage/' . $setting->value) }}" style="max-height: 80px; border-radius: 8px">
+                            <div class="mb-2 d-flex align-items-center gap-3">
+                                <img src="{{ \Illuminate\Support\Str::startsWith($setting->value, 'data:') ? $setting->value : asset('storage/' . $setting->value) . '?v=' . $setting->updated_at?->timestamp }}" style="max-height: 80px; border-radius: 8px; background:#f8f9fa; padding:4px">
+                                <label style="font-size:13px;color:#dc2626;cursor:pointer">
+                                    <input type="checkbox" name="remove_settings[{{ $setting->key }}]" value="1"> حذف الصورة الحالية
+                                </label>
                             </div>
                         @endif
-                        <input type="file" name="settings[{{ $setting->key }}]" class="form-control">
+                        <input type="file" name="settings[{{ $setting->key }}]" class="form-control" accept="image/*">
+                        <small style="color:#9ca3af;font-size:12px">صيغ مدعومة: JPG, PNG, SVG, WEBP — حتى 2 ميجابايت</small>
                     @else
                         <input type="text" name="settings[{{ $setting->key }}]" value="{{ $setting->value }}" class="form-control">
                     @endif

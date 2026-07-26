@@ -4,7 +4,7 @@
             <i class="bi bi-x-lg"></i>
         </button>
         @if(!empty($appSettings['platform_logo']))
-            <img src="{{ asset('storage/' . $appSettings['platform_logo']) }}" style="max-height: 40px; max-width: 100%; margin-bottom: 8px">
+            <img src="{{ \Illuminate\Support\Str::startsWith($appSettings['platform_logo'], 'data:') ? $appSettings['platform_logo'] : asset('storage/' . $appSettings['platform_logo']) }}" style="max-height: 40px; max-width: 100%; margin-bottom: 8px">
         @endif
         <span class="en">{{ $appSettings['platform_name_en'] ?? 'HR System' }}</span>
         <span class="ar">{{ $appSettings['platform_name_ar'] ?? 'نظام الموارد البشرية' }}</span>

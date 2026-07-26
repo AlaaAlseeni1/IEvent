@@ -86,6 +86,26 @@ class CompanyController extends Controller
         ]);
     }
 
+    // تفعيل شركة مسجّلة ذاتياً + تفعيل اشتراكها المعلّق (بعد تأكيد الدفع)
+    public function activate(Company $company)
+    {
+        $company->update(['is_active' => true]);
+
+        // تفعيل آخر اشتراك معلّق مع احتساب مدته من تاريخ التفعيل
+        $sub = $company->subscriptions()->where('status', 'suspended')->latest()->first();
+        if ($sub) {
+            $start = today();
+            $end   = $sub->package ? $sub->package->endDateFrom($start) : $start->copy()->addMonth();
+            $sub->update([
+                'status'    => 'active',
+                'starts_at' => $start,
+                'ends_at'   => $end,
+            ]);
+        }
+
+        return back()->with('success', 'تم تفعيل الشركة واشتراكها بنجاح');
+    }
+
     // إعادة تعيين كلمة مرور حساب الشركة
     public function resetUserPassword(Company $company)
     {
