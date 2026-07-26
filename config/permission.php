@@ -201,6 +201,8 @@ return [
          * file. Using 'default' here means to use the `default` set in cache.php.
          */
 
-        'store' => 'default',
+        // نخزّن كاش الصلاحيات في قاعدة البيانات بدل الملفات لتفادي مشاكل صلاحيات
+        // الكتابة على السيرفر (Railway) وليبقى الكاش ثابتاً بعد كل نشر.
+        'store' => env('PERMISSION_CACHE_STORE', 'database'),
     ],
 ];
