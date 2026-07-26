@@ -221,7 +221,14 @@ Route::middleware(['auth', 'staff', 'subscribed'])->group(function () {
     Route::resource('visits', VisitController::class);
 
     // التقييمات
-    Route::resource('evaluations', EvaluationController::class);
+    // إدارة الجودة: مراجعة التقييمات واعتمادها/رفضها
+    Route::middleware('permission:evaluations.view')->group(function () {
+        Route::get('evaluations', [EvaluationController::class, 'index'])->name('evaluations.index');
+        Route::get('evaluations/{evaluation}', [EvaluationController::class, 'show'])->name('evaluations.show');
+        Route::post('evaluations/{evaluation}/approve', [EvaluationController::class, 'approve'])->name('evaluations.approve');
+        Route::post('evaluations/{evaluation}/reject', [EvaluationController::class, 'reject'])->name('evaluations.reject');
+        Route::delete('evaluations/{evaluation}', [EvaluationController::class, 'destroy'])->name('evaluations.destroy');
+    });
 
     // رخص الجاهزية
     Route::resource('readiness-licenses', ReadinessLicenseController::class)->except(['edit', 'update']);
@@ -296,6 +303,13 @@ Route::middleware(['auth', 'employee', 'subscribed'])->prefix('portal')->name('p
     // زيارات الموظف
     Route::get('/visits', [EmployeePortalController::class, 'visits'])->name('visits');
     Route::post('/visits', [VisitController::class, 'portalStore'])->name('visits.store');
+    // تقييمات المراقب
+    Route::get('/evaluations', [EmployeePortalController::class, 'evaluations'])->name('evaluations');
+    Route::get('/evaluations/create', [EmployeePortalController::class, 'createEvaluation'])->name('evaluations.create');
+    Route::post('/evaluations', [EmployeePortalController::class, 'storeEvaluation'])->name('evaluations.store');
+    Route::get('/evaluations/{evaluation}/edit', [EmployeePortalController::class, 'editEvaluation'])->name('evaluations.edit');
+    Route::post('/evaluations/{evaluation}', [EmployeePortalController::class, 'updateEvaluation'])->name('evaluations.update');
+
     // الدعم الفني
     Route::get('/support', [EmployeePortalController::class, 'support'])->name('support');
     Route::post('/support', [EmployeePortalController::class, 'createTicket'])->name('support.store');
@@ -305,6 +319,7 @@ Route::middleware(['auth', 'employee', 'subscribed'])->prefix('portal')->name('p
 Route::middleware(['auth', 'company'])->prefix('company')->name('company.')->group(function () {
     Route::get('/', [CompanyPortalController::class, 'dashboard'])->name('dashboard');
     Route::get('/assignments', [CompanyPortalController::class, 'assignments'])->name('assignments');
+    Route::get('/evaluations', [CompanyPortalController::class, 'evaluations'])->name('evaluations');
     Route::get('/subscription', [CompanyPortalController::class, 'subscription'])->name('subscription');
 });
 

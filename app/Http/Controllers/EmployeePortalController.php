@@ -8,8 +8,13 @@ use App\Models\Contract;
 use App\Models\Task;
 use App\Models\SupportTicket;
 use App\Models\Visit;
+use App\Models\Evaluation;
+use App\Models\Location;
+use App\Models\LookupGroup;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class EmployeePortalController extends Controller
 {
@@ -232,5 +237,145 @@ class EmployeePortalController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'تم إرسال طلب الدعم بنجاح');
+    }
+
+    // =================== التقييمات (المراقب) ===================
+
+    // قائمة معايير التقييم الافتراضية إن لم تُعرَّف في التعريفات
+    public static function defaultCriteria(): array
+    {
+        $group = LookupGroup::where('key', 'evaluation_criteria')->first();
+        if ($group && $group->lookups->isNotEmpty()) {
+            return $group->lookups->pluck('value_ar')->toArray();
+        }
+        return ['الالتزام بالزي والمظهر', 'الانضباط والحضور', 'جودة تنفيذ المهام', 'التعامل مع الجمهور', 'تطبيق الإجراءات والأنظمة'];
+    }
+
+    public function evaluations()
+    {
+        $evaluations = Evaluation::where('evaluator_id', Auth::id())->latest()->get();
+        return view('employee.evaluations', compact('evaluations'));
+    }
+
+    public function createEvaluation()
+    {
+        $criteria  = self::defaultCriteria();
+        $locations = Location::orderBy('name')->get();
+        return view('employee.evaluation-form', [
+            'evaluation'  => new Evaluation(),
+            'criteria'    => $criteria,
+            'savedScores' => [],
+            'locations'   => $locations,
+        ]);
+    }
+
+    public function storeEvaluation(Request $request)
+    {
+        $data = $this->validateEvaluation($request);
+        $employee = $this->getEmployee();
+
+        $evaluation = new Evaluation();
+        $evaluation->evaluator_id = Auth::id();
+        $evaluation->employee_id  = $employee?->id ?? $request->employee_id;
+        $evaluation->company_id   = Auth::user()->company_id;
+        $this->fillEvaluation($evaluation, $request, $data);
+        $evaluation->save();
+
+        return redirect()->route('portal.evaluations')->with('success',
+            $evaluation->status === 'submitted' ? 'تم إرسال التقييم لإدارة الجودة' : 'تم حفظ المسودة');
+    }
+
+    public function editEvaluation(Evaluation $evaluation)
+    {
+        $this->guardOwnEvaluation($evaluation);
+        if (!$evaluation->isEditableByMonitor()) {
+            return redirect()->route('portal.evaluations')->with('error', 'لا يمكن تعديل تقييم قيد المراجعة أو معتمد');
+        }
+        // استرجاع المعايير المحفوظة [{name, score}] لعرضها في الفورم، أو الافتراضية
+        $saved = collect($evaluation->criteria ?? [])->mapWithKeys(fn($c) => [$c['name'] => $c['score']])->toArray();
+        $names = array_keys($saved) ?: self::defaultCriteria();
+
+        return view('employee.evaluation-form', [
+            'evaluation'  => $evaluation,
+            'criteria'    => $names,
+            'savedScores' => $saved,
+            'locations'   => Location::orderBy('name')->get(),
+        ]);
+    }
+
+    public function updateEvaluation(Request $request, Evaluation $evaluation)
+    {
+        $this->guardOwnEvaluation($evaluation);
+        if (!$evaluation->isEditableByMonitor()) {
+            return redirect()->route('portal.evaluations')->with('error', 'لا يمكن تعديل هذا التقييم');
+        }
+
+        $data = $this->validateEvaluation($request);
+        $this->fillEvaluation($evaluation, $request, $data);
+
+        // إعادة الإرسال بعد الرفض: تُمسح ملاحظات الجودة السابقة
+        if ($evaluation->status === 'submitted') {
+            $evaluation->quality_notes = null;
+        }
+        $evaluation->save();
+
+        return redirect()->route('portal.evaluations')->with('success',
+            $evaluation->status === 'submitted' ? 'تم إعادة إرسال التقييم للجودة' : 'تم حفظ التعديلات');
+    }
+
+    private function validateEvaluation(Request $request): array
+    {
+        return $request->validate([
+            'title'          => 'required|string|max:255',
+            'location_id'    => 'nullable|exists:locations,id',
+            'period'         => 'required|string|max:20',
+            'names'          => 'required|array|min:1',
+            'names.*'        => 'required|string|max:255',
+            'scores'         => 'required|array|min:1',
+            'scores.*'       => 'nullable|numeric|min:0|max:100',
+            'notes'          => 'nullable|string',
+            'action'         => 'required|in:draft,submit',
+            'attachments.*'  => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:4096',
+        ]);
+    }
+
+    private function fillEvaluation(Evaluation $evaluation, Request $request, array $data): void
+    {
+        // المعايير كمصفوفة [{name, score}] بمفاتيح رقمية (أمتن من مفاتيح عربية)
+        $criteria = [];
+        $sum = 0; $count = 0;
+        foreach ($data['names'] as $i => $name) {
+            $score = $data['scores'][$i] ?? null;
+            $criteria[] = ['name' => $name, 'score' => ($score === '' ? null : $score)];
+            if ($score !== null && $score !== '') { $sum += (float) $score; $count++; }
+        }
+        $total = $count ? round($sum / $count, 2) : 0;
+
+        $evaluation->title       = $data['title'];
+        $evaluation->location_id = $data['location_id'] ?? null;
+        $evaluation->period      = $data['period'];
+        $evaluation->criteria    = $criteria;
+        $evaluation->total_score = $total;
+        $evaluation->notes       = $data['notes'] ?? null;
+        $evaluation->status      = $data['action'] === 'submit' ? 'submitted' : 'draft';
+        if ($data['action'] === 'submit') {
+            $evaluation->submitted_at = now();
+        }
+
+        // المرفقات (صور/PDF) — تُضاف للموجودة
+        if ($request->hasFile('attachments')) {
+            $files = $evaluation->attachments ?? [];
+            foreach ($request->file('attachments') as $file) {
+                $files[] = $file->store('evaluations', 'public');
+            }
+            $evaluation->attachments = $files;
+        }
+    }
+
+    private function guardOwnEvaluation(Evaluation $evaluation): void
+    {
+        if ($evaluation->evaluator_id !== Auth::id()) {
+            abort(403);
+        }
     }
 }

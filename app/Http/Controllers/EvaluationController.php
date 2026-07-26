@@ -3,95 +3,111 @@
 namespace App\Http\Controllers;
 
 use App\Models\Evaluation;
-use App\Models\Employee;
-use App\Models\LookupGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class EvaluationController extends Controller
 {
+    // لوحة إدارة الجودة: طابور المراجعة + الإحصائيات
     public function index(Request $request)
     {
-        $query = Evaluation::with(['employee', 'evaluator']);
+        $query = Evaluation::with(['employee', 'evaluator', 'location', 'reviewer']);
 
         if ($request->search) {
-            $query->whereHas('employee', fn($q) => $q->where('name', 'like', '%'.$request->search.'%'));
+            $query->where(function ($q) use ($request) {
+                $q->where('title', 'like', '%'.$request->search.'%')
+                  ->orWhereHas('employee', fn($e) => $e->where('name', 'like', '%'.$request->search.'%'));
+            });
         }
         if ($request->status) {
             $query->where('status', $request->status);
         }
-        if ($request->period) {
-            $query->where('period', $request->period);
-        }
 
-        $evaluations = $query->latest()->paginate(20)->withQueryString();
+        // افتراضياً نُبرز التقييمات المرسلة للجودة أولاً
+        $evaluations = $query->orderByRaw("CASE WHEN status IN ('submitted','under_review') THEN 0 ELSE 1 END")
+                             ->latest()
+                             ->paginate(20)->withQueryString();
 
         $stats = [
-            'total'     => Evaluation::count(),
-            'draft'     => Evaluation::where('status','draft')->count(),
-            'submitted' => Evaluation::where('status','submitted')->count(),
-            'approved'  => Evaluation::where('status','approved')->count(),
-            'avg_score' => round(Evaluation::avg('total_score') ?? 0, 1),
+            'pending'  => Evaluation::whereIn('status', ['submitted', 'under_review'])->count(),
+            'approved' => Evaluation::where('status', 'approved')->count(),
+            'rejected' => Evaluation::where('status', 'rejected')->count(),
+            'avg'      => round(Evaluation::where('status', 'approved')->avg('total_score') ?? 0, 1),
         ];
 
         return view('evaluations.index', compact('evaluations', 'stats'));
     }
 
-    public function create()
-    {
-        $employees = Employee::where('status', 'active')->get();
-        $criteria  = LookupGroup::where('key', 'evaluation_criteria')->first()?->lookups ?? collect();
-        return view('evaluations.create', compact('employees', 'criteria'));
-    }
-
-    public function store(Request $request)
-    {
-        $request->validate([
-            'employee_id' => 'required|exists:employees,id',
-            'period'      => 'required|string|max:20',
-            'criteria'    => 'nullable|array',
-            'total_score' => 'required|numeric|min:0|max:100',
-            'status'      => 'required|in:draft,submitted,approved',
-            'notes'       => 'nullable|string',
-        ]);
-
-        Evaluation::create(array_merge($request->all(), ['evaluator_id' => Auth::id()]));
-
-        return redirect()->route('evaluations.index')->with('success', 'تم إضافة التقييم');
-    }
-
+    // شاشة مراجعة تقييم واحد (اعتماد/رفض)
     public function show(Evaluation $evaluation)
     {
-        $evaluation->load(['employee', 'evaluator']);
+        $evaluation->load(['employee', 'evaluator', 'location', 'reviewer']);
         return view('evaluations.show', compact('evaluation'));
     }
 
-    public function edit(Evaluation $evaluation)
+    // اعتماد التقييم
+    public function approve(Evaluation $evaluation)
     {
-        $employees = Employee::where('status', 'active')->get();
-        $criteria  = LookupGroup::where('key', 'evaluation_criteria')->first()?->lookups ?? collect();
-        return view('evaluations.edit', compact('evaluation', 'employees', 'criteria'));
-    }
+        $this->authorizeReview();
+        if (!$evaluation->isPendingQuality()) {
+            return back()->with('error', 'لا يمكن اعتماد تقييم ليس قيد المراجعة');
+        }
 
-    public function update(Request $request, Evaluation $evaluation)
-    {
-        $request->validate([
-            'employee_id' => 'required|exists:employees,id',
-            'period'      => 'required|string|max:20',
-            'criteria'    => 'nullable|array',
-            'total_score' => 'required|numeric|min:0|max:100',
-            'status'      => 'required|in:draft,submitted,approved',
-            'notes'       => 'nullable|string',
+        $evaluation->update([
+            'status'        => 'approved',
+            'reviewed_by'   => Auth::id(),
+            'reviewed_at'   => now(),
+            'quality_notes' => null,
         ]);
 
-        $evaluation->update($request->all());
+        $this->notifyMonitor($evaluation, 'تم اعتماد تقييمك: '.$evaluation->title);
 
-        return redirect()->route('evaluations.index')->with('success', 'تم تعديل التقييم');
+        return redirect()->route('evaluations.index')->with('success', 'تم اعتماد التقييم');
+    }
+
+    // رفض التقييم مع ملاحظات الجودة
+    public function reject(Request $request, Evaluation $evaluation)
+    {
+        $this->authorizeReview();
+        $request->validate(['quality_notes' => 'required|string|min:3']);
+
+        if (!$evaluation->isPendingQuality()) {
+            return back()->with('error', 'لا يمكن رفض تقييم ليس قيد المراجعة');
+        }
+
+        $evaluation->update([
+            'status'        => 'rejected',
+            'reviewed_by'   => Auth::id(),
+            'reviewed_at'   => now(),
+            'quality_notes' => $request->quality_notes,
+        ]);
+
+        $this->notifyMonitor($evaluation, 'تم رفض تقييمك «'.$evaluation->title.'» — راجع ملاحظات الجودة وأعد الإرسال');
+
+        return redirect()->route('evaluations.index')->with('success', 'تم رفض التقييم وإعادته للمراقب');
     }
 
     public function destroy(Evaluation $evaluation)
     {
+        $this->authorizeReview();
         $evaluation->delete();
         return redirect()->route('evaluations.index')->with('success', 'تم حذف التقييم');
+    }
+
+    private function authorizeReview(): void
+    {
+        abort_unless(Auth::user()->can('evaluations.review'), 403, 'لا تملك صلاحية مراجعة التقييمات');
+    }
+
+    // إشعار المراقب بنتيجة المراجعة (إن توفّر نظام الإشعارات)
+    private function notifyMonitor(Evaluation $evaluation, string $message): void
+    {
+        try {
+            if (class_exists(\App\Notifications\GenericNotification::class) && $evaluation->evaluator) {
+                $evaluation->evaluator->notify(new \App\Notifications\GenericNotification($message, route('portal.evaluations')));
+            }
+        } catch (\Throwable $e) {
+            // نظام الإشعارات اختياري — نتجاهل الفشل بصمت
+        }
     }
 }

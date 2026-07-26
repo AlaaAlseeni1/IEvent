@@ -31,8 +31,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'events.view', 'events.create', 'events.edit', 'events.delete',
             // الزيارات
             'visits.view', 'visits.create', 'visits.edit', 'visits.delete',
-            // التقييمات
-            'evaluations.view', 'evaluations.create', 'evaluations.edit', 'evaluations.delete',
+            // التقييمات (create/edit للمراقب، review للجودة)
+            'evaluations.view', 'evaluations.create', 'evaluations.edit', 'evaluations.delete', 'evaluations.review',
             // الدعم الفني
             'support.view', 'support.edit',
             // التقارير
@@ -78,10 +78,16 @@ class RolesAndPermissionsSeeder extends Seeder
             'assets.view', 'assets.create', 'assets.edit', 'assets.delete',
             'events.view', 'events.create', 'events.edit', 'events.delete',
             'visits.view', 'visits.create', 'visits.edit', 'visits.delete',
-            'evaluations.view', 'evaluations.create', 'evaluations.edit', 'evaluations.delete',
+            'evaluations.view', 'evaluations.create', 'evaluations.edit', 'evaluations.delete', 'evaluations.review',
             'support.view', 'support.edit', 'reports.view',
             'users.view', 'users.create', 'users.edit', 'users.delete',
             'roles.view', 'roles.create', 'roles.edit', 'roles.delete',
+        ]);
+
+        // مدير الجودة: يراجع التقييمات ويعتمدها/يرفضها
+        $quality = Role::firstOrCreate(['name' => 'quality_manager']);
+        $quality->syncPermissions([
+            'evaluations.view', 'evaluations.review', 'reports.view',
         ]);
 
         // مشرف ومدير إدارة (أدوار داخل الشركة)

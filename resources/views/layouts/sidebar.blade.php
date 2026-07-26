@@ -124,9 +124,11 @@
             <i class="bi bi-chevron-down arrow" id="arrow-quality"></i>
         </div>
         <div class="menu-items" id="menu-quality">
+            @can('evaluations.view')
             <a href="{{ route('evaluations.index') }}" class="{{ request()->is('evaluations*') ? 'active' : '' }}">
-                <i class="bi bi-star-half"></i> التقييمات
+                <i class="bi bi-star-half"></i> التقييمات (الجودة)
             </a>
+            @endcan
             <a href="{{ route('readiness-licenses.index') }}" class="{{ request()->is('readiness-licenses*') ? 'active' : '' }}">
                 <i class="bi bi-shield-check"></i> رخص الجاهزية
             </a>

@@ -155,6 +155,9 @@
             <a href="{{ route('portal.visits') }}" class="{{ request()->routeIs('portal.visits*') ? 'active' : '' }}">
                 <i class="bi bi-geo-alt-fill"></i> زياراتي
             </a>
+            <a href="{{ route('portal.evaluations') }}" class="{{ request()->routeIs('portal.evaluations*') ? 'active' : '' }}">
+                <i class="bi bi-clipboard-check"></i> التقييمات
+            </a>
             <a href="{{ route('portal.support') }}" class="{{ request()->routeIs('portal.support*') ? 'active' : '' }}">
                 <i class="bi bi-headset"></i> الدعم
             </a>
@@ -195,6 +198,9 @@
             </a>
             <a href="{{ route('portal.visits') }}" class="{{ request()->routeIs('portal.visits*') ? 'active' : '' }}">
                 <i class="bi bi-geo-alt-fill"></i> زياراتي
+            </a>
+            <a href="{{ route('portal.evaluations') }}" class="{{ request()->routeIs('portal.evaluations*') ? 'active' : '' }}">
+                <i class="bi bi-clipboard-check"></i> التقييمات
             </a>
             <a href="{{ route('portal.support') }}" class="{{ request()->routeIs('portal.support*') ? 'active' : '' }}">
                 <i class="bi bi-headset"></i> الدعم الفني

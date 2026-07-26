@@ -92,6 +92,9 @@
             <a href="{{ route('company.assignments') }}" class="{{ request()->routeIs('company.assignments*') ? 'active' : '' }}">
                 <i class="bi bi-people"></i> الإسنادات
             </a>
+            <a href="{{ route('company.evaluations') }}" class="{{ request()->routeIs('company.evaluations*') ? 'active' : '' }}">
+                <i class="bi bi-clipboard-check"></i> التقييمات
+            </a>
             <a href="{{ route('company.subscription') }}" class="{{ request()->routeIs('company.subscription*') ? 'active' : '' }}">
                 <i class="bi bi-credit-card"></i> اشتراكنا
             </a>
@@ -118,6 +121,9 @@
             </a>
             <a href="{{ route('company.assignments') }}" class="{{ request()->routeIs('company.assignments*') ? 'active' : '' }}">
                 <i class="bi bi-people"></i> الإسنادات
+            </a>
+            <a href="{{ route('company.evaluations') }}" class="{{ request()->routeIs('company.evaluations*') ? 'active' : '' }}">
+                <i class="bi bi-clipboard-check"></i> التقييمات
             </a>
             <a href="{{ route('company.subscription') }}" class="{{ request()->routeIs('company.subscription*') ? 'active' : '' }}">
                 <i class="bi bi-credit-card"></i> اشتراكنا

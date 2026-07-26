@@ -45,6 +45,18 @@ class CompanyPortalController extends Controller
         return view('company.assignments', compact('company', 'assignments'));
     }
 
+    public function evaluations()
+    {
+        $company = $this->company();
+        $evaluations = \App\Models\Evaluation::where('company_id', $company->id)
+            ->where('status', 'approved')
+            ->with(['employee', 'location', 'reviewer'])
+            ->latest('reviewed_at')
+            ->paginate(15);
+
+        return view('company.evaluations', compact('company', 'evaluations'));
+    }
+
     public function subscription()
     {
         $company       = $this->company();
