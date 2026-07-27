@@ -57,6 +57,17 @@ class CompanyPortalController extends Controller
         return view('company.evaluations', compact('company', 'evaluations'));
     }
 
+    // رفع/تحديث شعار الشركة من حساب الشركة نفسها
+    public function updateLogo(\Illuminate\Http\Request $request)
+    {
+        $request->validate(['logo' => 'required|image|mimes:jpg,jpeg,png,svg,webp|max:2048']);
+        $file = $request->file('logo');
+        $this->company()->update([
+            'logo' => 'data:' . $file->getMimeType() . ';base64,' . base64_encode(file_get_contents($file->getRealPath())),
+        ]);
+        return back()->with('success', 'تم تحديث شعار الشركة بنجاح');
+    }
+
     public function subscription()
     {
         $company       = $this->company();

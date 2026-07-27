@@ -172,6 +172,9 @@
 
     {{-- شريط الإشعارات العلوي --}}
     <div style="position:fixed;top:12px;left:15px;z-index:180;display:flex;align-items:center;gap:8px">
+        <button onclick="goBack()" title="رجوع" style="background:white;border:none;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer;color:#374151">
+            <i class="bi bi-arrow-right" style="font-size:18px"></i>
+        </button>
         @auth
         @php $unread = Auth::user()->unreadNotifications->count(); @endphp
         <a href="{{ route('notifications.index') }}" style="position:relative;background:white;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);text-decoration:none;color:#374151">
@@ -189,6 +192,21 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        function goBack() {
+            if (document.referrer && document.referrer !== location.href) { history.back(); }
+            else { window.location.href = '{{ url('/dashboard') }}'; }
+        }
+        // فلترة الجداول بالبحث النصي (اسم/رقم) على الصفوف المعروضة
+        function filterTable(input, tableId) {
+            var q = input.value.trim().toLowerCase();
+            var table = document.getElementById(tableId);
+            if (!table) return;
+            var rows = table.querySelectorAll('tbody tr');
+            rows.forEach(function (tr) {
+                if (tr.querySelectorAll('td').length <= 1) return; // تجاهل صف "لا يوجد بيانات"
+                tr.style.display = tr.textContent.toLowerCase().indexOf(q) > -1 ? '' : 'none';
+            });
+        }
         function toggleSidebar() {
             const sidebar = document.querySelector('.sidebar');
             const overlay = document.getElementById('sidebarOverlay');

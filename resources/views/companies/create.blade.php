@@ -12,12 +12,16 @@
 @endif
 
 <div class="card"><div class="card-body" style="padding:25px">
-    <form action="{{ route('companies.store') }}" method="POST">
+    <form action="{{ route('companies.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <div class="row g-3 mb-4">
             <div class="col-md-6">
                 <label class="form-label">اسم الشركة *</label>
                 <input type="text" name="name" class="form-control" value="{{ old('name') }}" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">شعار الشركة</label>
+                <input type="file" name="logo" class="form-control" accept="image/*">
             </div>
             <div class="col-md-6">
                 <label class="form-label">السجل التجاري</label>

@@ -320,6 +320,7 @@ Route::middleware(['auth', 'company'])->prefix('company')->name('company.')->gro
     Route::get('/', [CompanyPortalController::class, 'dashboard'])->name('dashboard');
     Route::get('/assignments', [CompanyPortalController::class, 'assignments'])->name('assignments');
     Route::get('/evaluations', [CompanyPortalController::class, 'evaluations'])->name('evaluations');
+    Route::post('/logo', [CompanyPortalController::class, 'updateLogo'])->name('logo.update');
     Route::get('/subscription', [CompanyPortalController::class, 'subscription'])->name('subscription');
 });
 

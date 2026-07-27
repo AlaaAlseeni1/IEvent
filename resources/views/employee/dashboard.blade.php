@@ -21,6 +21,12 @@
     <div class="row align-items-center g-3">
         <div class="col-md-8">
             <h2 style="margin:0 0 6px"><i class="bi bi-hand-wave"></i> أهلاً، {{ $employee->name }}</h2>
+            @if(Auth::user()->company)
+            <p style="margin:0 0 4px;color:#d4af37;font-size:14px;display:flex;align-items:center;gap:8px">
+                @if(Auth::user()->company->logo_url)<img src="{{ Auth::user()->company->logo_url }}" style="height:24px;border-radius:4px;background:white;padding:1px">@endif
+                <i class="bi bi-building"></i> {{ Auth::user()->company->name }}
+            </p>
+            @endif
             <p style="margin:0;color:#9ca3af">{{ now()->translatedFormat('l، d F Y') }}</p>
             @if($employee->position || $employee->department)
             <p style="margin:6px 0 0;color:#d4af37;font-size:14px">

@@ -18,13 +18,15 @@
     </div>
 @endif
 
+<x-table-search target="tbl-employees" placeholder="بحث باسم الموظف أو رقمه..." />
+
 <div class="card">
     <div class="card-header">
         <span style="font-weight:600; font-size:15px;">قائمة الموظفين</span>
         <span style="color:#9ca3af; font-size:13px;">إجمالي: {{ count($employees) }} موظف</span>
     </div>
     <div class="card-body p-0">
-        <table class="table mb-0">
+        <table id="tbl-employees" class="table mb-0">
             <thead>
                 <tr>
                     <th>#</th>

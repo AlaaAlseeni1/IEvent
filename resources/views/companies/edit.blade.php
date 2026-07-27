@@ -12,12 +12,21 @@
 @endif
 
 <div class="card"><div class="card-body" style="padding:25px">
-    <form action="{{ route('companies.update', $company->id) }}" method="POST">
+    <form action="{{ route('companies.update', $company->id) }}" method="POST" enctype="multipart/form-data">
         @csrf @method('PUT')
         <div class="row g-3 mb-4">
             <div class="col-md-6">
                 <label class="form-label">اسم الشركة *</label>
                 <input type="text" name="name" class="form-control" value="{{ old('name',$company->name) }}" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">شعار الشركة</label>
+                <div class="d-flex align-items-center gap-2">
+                    @if($company->logo_url)
+                        <img src="{{ $company->logo_url }}" style="height:44px;border-radius:8px;background:#f8f9fa;padding:3px;border:1px solid #eee">
+                    @endif
+                    <input type="file" name="logo" class="form-control" accept="image/*">
+                </div>
             </div>
             <div class="col-md-6">
                 <label class="form-label">السجل التجاري</label>

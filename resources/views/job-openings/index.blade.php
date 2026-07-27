@@ -17,7 +17,8 @@
         <span style="color:#9ca3af;font-size:13px">{{ $openings->total() }} وظيفة</span>
     </div>
     <div class="card-body p-0">
-        <table class="table mb-0">
+        <div style="padding:12px 16px 0"><div style="position:relative;max-width:420px"><i class="bi bi-search" style="position:absolute;top:50%;transform:translateY(-50%);right:14px;color:#9ca3af;font-size:14px"></i><input type="text" onkeyup="filterTable(this,'tbl-job-openings')" class="form-control" style="padding-right:40px" placeholder="بحث بعنوان الوظيفة..." autocomplete="off"></div></div>
+        <table id="tbl-job-openings" class="table mb-0">
             <thead>
                 <tr>
                     <th>#</th>

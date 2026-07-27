@@ -7,9 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 class Company extends Model
 {
     protected $fillable = [
-        'name', 'commercial_register', 'contact_person',
+        'name', 'logo', 'commercial_register', 'contact_person',
         'phone', 'email', 'city', 'address', 'is_active', 'notes',
     ];
+
+    // مصدر عرض الشعار (base64 أو مسار قديم) أو null
+    public function getLogoUrlAttribute(): ?string
+    {
+        if (!$this->logo) {
+            return null;
+        }
+        return \Illuminate\Support\Str::startsWith($this->logo, 'data:')
+            ? $this->logo
+            : asset('storage/' . $this->logo);
+    }
 
     public function assignments()
     {

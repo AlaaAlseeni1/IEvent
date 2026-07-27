@@ -33,13 +33,12 @@
         @if($regions->count())
         <table class="table mb-0">
             <thead>
-                <tr><th>اسم المنطقة</th><th>المنطقة الأم</th><th>المواقع</th><th>الملاحظات</th><th>الحالة</th><th></th></tr>
+                <tr><th>اسم المنطقة</th><th>المواقع</th><th>الملاحظات</th><th>الحالة</th><th></th></tr>
             </thead>
             <tbody>
                 @foreach($regions as $region)
                 <tr>
                     <td style="font-weight:600">{{ $region->name }}</td>
-                    <td style="font-size:13px">{{ $region->parent?->name ?? '—' }}</td>
                     <td style="text-align:center">
                         <a href="{{ route('regions.show', $region->id) }}" style="color:#1d4ed8;font-weight:700;text-decoration:none">{{ $region->locations_count }}</a>
                     </td>
@@ -53,7 +52,7 @@
                         <div style="display:flex;gap:4px">
                             <a href="{{ route('regions.show', $region->id) }}" class="btn btn-edit" style="font-size:11px;padding:4px 8px"><i class="bi bi-eye"></i></a>
                             <button class="btn btn-edit" style="font-size:11px;padding:4px 8px"
-                                onclick="editRegion({{ $region->id }},'{{ addslashes($region->name) }}','{{ $region->parent_id }}','{{ addslashes($region->notes ?? '') }}')">
+                                onclick="editRegion({{ $region->id }},'{{ addslashes($region->name) }}','{{ addslashes($region->notes ?? '') }}')">
                                 <i class="bi bi-pencil"></i>
                             </button>
                             <form action="{{ route('regions.destroy', $region->id) }}" method="POST" onsubmit="return confirm('حذف هذه المنطقة؟')">
@@ -89,15 +88,6 @@
                         <input type="text" name="name" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">المنطقة الأم</label>
-                        <select name="parent_id" class="form-select">
-                            <option value="">-- لا يوجد --</option>
-                            @foreach($parents as $p)
-                                <option value="{{ $p->id }}">{{ $p->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-3">
                         <label class="form-label">ملاحظات</label>
                         <textarea name="notes" class="form-control" rows="2"></textarea>
                     </div>
@@ -124,15 +114,6 @@
                         <input type="text" name="name" id="editName" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">المنطقة الأم</label>
-                        <select name="parent_id" id="editParent" class="form-select">
-                            <option value="">-- لا يوجد --</option>
-                            @foreach($parents as $p)
-                                <option value="{{ $p->id }}">{{ $p->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-3">
                         <label class="form-label">ملاحظات</label>
                         <textarea name="notes" id="editNotes" class="form-control" rows="2"></textarea>
                     </div>
@@ -147,11 +128,10 @@
 </div>
 
 <script>
-function editRegion(id, name, parentId, notes) {
+function editRegion(id, name, notes) {
     document.getElementById('editForm').action = '/regions/' + id;
     document.getElementById('editName').value = name;
     document.getElementById('editNotes').value = notes;
-    document.getElementById('editParent').value = parentId || '';
     new bootstrap.Modal(document.getElementById('editModal')).show();
 }
 </script>

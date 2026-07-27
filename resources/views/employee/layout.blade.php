@@ -134,8 +134,12 @@
 
     <div class="navbar">
         <div class="brand">
-            <i class="bi bi-calendar2-event"></i>
-            <span>بوابة الموظف</span>
+            @if(Auth::user()->company?->logo_url)
+                <img src="{{ Auth::user()->company->logo_url }}" style="height:34px;max-width:120px;border-radius:6px;background:white;padding:2px">
+            @else
+                <i class="bi bi-calendar2-event"></i>
+            @endif
+            <span>{{ Auth::user()->company->name ?? 'بوابة الموظف' }}</span>
         </div>
 
         {{-- Desktop nav links --}}
@@ -167,6 +171,9 @@
         </div>
 
         <div class="d-flex align-items-center gap-2">
+            <button onclick="goBack()" title="رجوع" style="background:transparent;border:1px solid rgba(255,255,255,0.25);color:white;border-radius:8px;width:38px;height:38px;cursor:pointer">
+                <i class="bi bi-arrow-right"></i>
+            </button>
             <div class="user-info">
                 <span class="name">{{ Auth::user()->name }}</span>
                 <form method="POST" action="{{ route('logout') }}" style="margin:0">
@@ -219,6 +226,10 @@
     <script>
         function toggleNav() {
             document.getElementById('navCollapse').classList.toggle('open');
+        }
+        function goBack() {
+            if (document.referrer && document.referrer !== location.href) { history.back(); }
+            else { window.location.href = '{{ route('portal.dashboard') }}'; }
         }
     </script>
 

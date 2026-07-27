@@ -28,8 +28,12 @@ class CompanyController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate(['name' => 'required|string|max:255']);
-        Company::create($request->all());
+        $request->validate(['name' => 'required|string|max:255', 'logo' => 'nullable|image|mimes:jpg,jpeg,png,svg,webp|max:2048']);
+        $data = $request->except('logo');
+        if ($request->hasFile('logo')) {
+            $data['logo'] = $this->encodeLogo($request->file('logo'));
+        }
+        Company::create($data);
         return redirect()->route('companies.index')->with('success', 'تم إضافة الشركة بنجاح');
     }
 
@@ -37,9 +41,19 @@ class CompanyController extends Controller
 
     public function update(Request $request, Company $company)
     {
-        $request->validate(['name' => 'required|string|max:255']);
-        $company->update($request->all());
+        $request->validate(['name' => 'required|string|max:255', 'logo' => 'nullable|image|mimes:jpg,jpeg,png,svg,webp|max:2048']);
+        $data = $request->except('logo');
+        if ($request->hasFile('logo')) {
+            $data['logo'] = $this->encodeLogo($request->file('logo'));
+        }
+        $company->update($data);
         return redirect()->route('companies.index')->with('success', 'تم تعديل الشركة بنجاح');
+    }
+
+    // ترميز الشعار base64 (يبقى بعد كل نشر على السيرفر)
+    private function encodeLogo(\Illuminate\Http\UploadedFile $file): string
+    {
+        return 'data:' . $file->getMimeType() . ';base64,' . base64_encode(file_get_contents($file->getRealPath()));
     }
 
     public function destroy(Company $company)

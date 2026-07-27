@@ -47,7 +47,8 @@
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
-        <table class="table mb-0" style="min-width:650px">
+        <div style="padding:12px 16px 0"><div style="position:relative;max-width:420px"><i class="bi bi-search" style="position:absolute;top:50%;transform:translateY(-50%);right:14px;color:#9ca3af;font-size:14px"></i><input type="text" onkeyup="filterTable(this,'tbl-locations')" class="form-control" style="padding-right:40px" placeholder="بحث باسم الموقع أو المدينة..." autocomplete="off"></div></div>
+        <table id="tbl-locations" class="table mb-0" style="min-width:650px">
             <thead>
                 <tr><th>#</th><th>الموقع</th><th>المنطقة</th><th>النوع</th><th>المدينة</th><th>الحالة</th><th>الإجراء</th></tr>
             </thead>

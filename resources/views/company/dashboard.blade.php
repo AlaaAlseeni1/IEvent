@@ -3,8 +3,28 @@
 @section('content')
 
 <div class="welcome">
-    <h2>مرحباً، {{ $company->name }} 👋</h2>
-    <p>{{ today()->translatedFormat('l، d F Y') }}</p>
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        @if($company->logo_url)
+            <img src="{{ $company->logo_url }}" style="height:60px;max-width:160px;border-radius:10px;background:white;padding:5px">
+        @endif
+        <div>
+            <h2 style="margin:0">مرحباً، {{ $company->name }} 👋</h2>
+            <p style="margin:4px 0 0">{{ today()->translatedFormat('l، d F Y') }}</p>
+        </div>
+    </div>
+</div>
+
+{{-- رفع/تحديث شعار الشركة --}}
+<div class="card">
+    <h5 style="font-weight:700;margin-bottom:12px"><i class="bi bi-image" style="color:#d4af37"></i> شعار الشركة</h5>
+    <form method="POST" action="{{ route('company.logo.update') }}" enctype="multipart/form-data" class="d-flex align-items-center gap-3 flex-wrap">
+        @csrf
+        @if($company->logo_url)
+            <img src="{{ $company->logo_url }}" style="height:56px;border-radius:10px;background:#f8f9fa;padding:4px;border:1px solid #eee">
+        @endif
+        <input type="file" name="logo" class="form-control" accept="image/*" style="max-width:280px" required>
+        <button class="btn-action" style="padding:9px 20px;font-size:13px"><i class="bi bi-upload"></i> حفظ الشعار</button>
+    </form>
 </div>
 
 <div class="row g-3 mb-4">
