@@ -14,7 +14,7 @@ class EnsureApproved
         $user = $request->user();
 
         if ($user && !$user->is_approved) {
-            if ($request->routeIs('account.pending') || $request->routeIs('logout')) {
+            if ($request->routeIs('account.pending') || $request->routeIs('logout') || $request->routeIs('impersonate.leave')) {
                 return $next($request);
             }
             return redirect()->route('account.pending');

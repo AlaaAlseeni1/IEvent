@@ -17,6 +17,7 @@
     </style>
 </head>
 <body>
+    @include('partials.impersonation-banner')
     <div class="box">
         <i class="bi bi-hourglass-split"></i>
         <h2>حسابك قيد المراجعة</h2>

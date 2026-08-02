@@ -62,6 +62,14 @@
                             </button>
                         </form>
                         @endunless
+                        @if(auth()->user()->hasRole('admin') && !auth()->user()->company_id && $user->id !== auth()->id() && !$user->hasRole('admin'))
+                        <form action="{{ route('impersonate.start', $user->id) }}" method="POST" style="display:inline">
+                            @csrf
+                            <button class="btn" style="font-size:12px;background:#f59e0b;color:#1a1a2e;font-weight:700" onclick="return confirm('الدخول إلى حساب {{ $user->name }}؟')">
+                                <i class="bi bi-box-arrow-in-left"></i> دخول كالحساب
+                            </button>
+                        </form>
+                        @endif
                         <a href="{{ route('users.edit', $user->id) }}" class="btn btn-edit">
                             <i class="bi bi-pencil"></i> تعديل
                         </a>

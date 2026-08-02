@@ -79,6 +79,8 @@
 </head>
 <body>
 
+    @include('partials.impersonation-banner')
+
     <div class="navbar">
         <div class="brand">
             @if(Auth::user()->company?->logo_url)

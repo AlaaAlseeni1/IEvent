@@ -74,6 +74,11 @@
                     <td>
                         @if($co->users->isNotEmpty())
                             <div style="font-size:12px;color:#16a34a"><i class="bi bi-person-check"></i> {{ $co->users->first()->email }}</div>
+                            <form action="{{ route('impersonate.start', $co->users->first()->id) }}" method="POST" style="display:inline">
+                                @csrf
+                                <button class="btn" style="font-size:11px;padding:2px 8px;background:#f59e0b;color:#1a1a2e;font-weight:700"
+                                        onclick="return confirm('الدخول إلى حساب شركة {{ $co->name }}؟')"><i class="bi bi-box-arrow-in-left"></i> دخول</button>
+                            </form>
                             <form action="{{ route('companies.reset-user-password', $co->id) }}" method="POST" style="display:inline"
                                   onsubmit="return confirm('إعادة تعيين كلمة مرور حساب {{ $co->name }}؟')">
                                 @csrf

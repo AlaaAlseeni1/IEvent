@@ -125,6 +125,13 @@ Route::get('/subscription-expired', function () {
     return view('subscription-expired');
 })->middleware('auth')->name('subscription.expired');
 
+// انتحال الحساب (Impersonation): المشرف يدخل كأي حساب / يعود لحسابه
+// مسار العودة تحت auth فقط ليبقى متاحاً حتى في صفحات الانتظار والاشتراك المنتهي
+Route::post('/impersonate/{user}', [\App\Http\Controllers\ImpersonationController::class, 'start'])
+    ->middleware(['auth', 'role:admin'])->name('impersonate.start');
+Route::post('/impersonate-leave', [\App\Http\Controllers\ImpersonationController::class, 'stop'])
+    ->middleware('auth')->name('impersonate.leave');
+
 Route::middleware(['auth', 'staff', 'subscribed'])->group(function () {
     // البروفايل
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

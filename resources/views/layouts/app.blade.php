@@ -163,6 +163,8 @@
 </head>
 <body>
 
+    @include('partials.impersonation-banner')
+
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
     <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidebar()" aria-label="القائمة">
         <i class="bi bi-list"></i>

@@ -17,6 +17,7 @@
     </style>
 </head>
 <body>
+    @include('partials.impersonation-banner')
     <div class="box">
         <i class="bi bi-exclamation-octagon"></i>
         <h2>اشتراك شركتكم غير فعال</h2>

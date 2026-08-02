@@ -218,6 +218,8 @@
         </div>
     </div>
 
+    @include('partials.impersonation-banner')
+
     <div class="container">
         @yield('content')
     </div>
