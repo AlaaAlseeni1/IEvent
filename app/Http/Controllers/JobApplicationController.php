@@ -16,7 +16,8 @@ class JobApplicationController extends Controller
 
     public function apply()
     {
-        $openings = JobOpening::where('is_active', true)
+        $openings = JobOpening::with('company')
+            ->where('is_active', true)
             ->where(fn($q) => $q->whereNull('deadline')->orWhere('deadline', '>=', today()))
             ->withCount('applications')
             ->latest()->get();
@@ -69,7 +70,12 @@ class JobApplicationController extends Controller
         $request->validate($rules, $messages);
 
         $fileFields = ['photo', 'id_photo', 'cv_file', 'iban_photo'];
-        $data = ['job_opening_id' => $jobOpening->id, 'desired_position' => $jobOpening->title];
+        // طلب التوظيف يُنسب لشركة الوظيفة (التقديم عام بلا مستخدم مسجّل)
+        $data = [
+            'job_opening_id'   => $jobOpening->id,
+            'company_id'       => $jobOpening->company_id,
+            'desired_position' => $jobOpening->title,
+        ];
 
         foreach ($jobOpening->fields ?? [] as $field) {
             $key = $field['key'];
@@ -168,7 +174,11 @@ class JobApplicationController extends Controller
             'email.unique'    => 'هذا البريد الإلكتروني مستخدم بالفعل في النظام',
         ]);
 
+        // الموظف يُنسب لشركة الطلب (أو شركة المستخدم المحوِّل)
+        $companyId = $jobApplication->company_id ?? auth()->user()->company_id;
+
         $employeeData = [
+            'company_id'      => $companyId,
             'name'            => $request->name ?? $jobApplication->full_name,
             'employee_number' => $request->employee_number,
             'phone'           => $request->phone ?? $jobApplication->phone,
@@ -201,8 +211,13 @@ class JobApplicationController extends Controller
             'email'       => $request->email,
             'password'    => bcrypt($tempPassword),
             'employee_id' => $employee->id,
+            'company_id'  => $companyId,
         ]);
+
+        // منح دور الموظف ضمن سياق شركته
+        setPermissionsTeamId($companyId ?? 0);
         $user->assignRole('employee');
+        setPermissionsTeamId(auth()->user()->company_id ?? 0);
 
         $jobApplication->update([
             'status'      => 'accepted',

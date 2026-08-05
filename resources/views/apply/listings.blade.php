@@ -47,9 +47,17 @@
         <div class="col-md-6 col-lg-4">
             <div class="job-card d-flex flex-column">
                 <div class="mb-3">
+                    @if($opening->company)
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                        @if($opening->company->logo_url)
+                            <img src="{{ $opening->company->logo_url }}" style="height:28px;max-width:90px;border-radius:6px">
+                        @endif
+                        <span style="font-size:13px;font-weight:700;color:#0f3460">{{ $opening->company->name }}</span>
+                    </div>
+                    @endif
                     <h5 style="font-weight:700;margin-bottom:8px">{{ $opening->title }}</h5>
                     @if($opening->department)
-                    <span class="job-tag"><i class="bi bi-building me-1"></i>{{ $opening->department }}</span>
+                    <span class="job-tag"><i class="bi bi-briefcase me-1"></i>{{ $opening->department }}</span>
                     @endif
                     @if($opening->deadline)
                     <span class="deadline-badge me-2"><i class="bi bi-clock me-1"></i>آخر موعد: {{ $opening->deadline->format('Y-m-d') }}</span>

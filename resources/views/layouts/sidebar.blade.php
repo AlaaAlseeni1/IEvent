@@ -3,11 +3,23 @@
         <button class="sidebar-close-btn" onclick="closeSidebar()" aria-label="إغلاق القائمة">
             <i class="bi bi-x-lg"></i>
         </button>
-        @if(!empty($appSettings['platform_logo']))
-            <img src="{{ \Illuminate\Support\Str::startsWith($appSettings['platform_logo'], 'data:') ? $appSettings['platform_logo'] : asset('storage/' . $appSettings['platform_logo']) }}" style="max-height: 40px; max-width: 100%; margin-bottom: 8px">
+        @php($currentCompany = auth()->user()?->company)
+        @if($currentCompany)
+            {{-- علامة الشركة عند دخول حساب تابع لشركة --}}
+            @if($currentCompany->logo_url)
+                <img src="{{ $currentCompany->logo_url }}" style="max-height: 44px; max-width: 100%; margin-bottom: 8px; border-radius:8px; background:#fff; padding:3px">
+            @else
+                <i class="bi bi-building" style="font-size:34px; color:#d4af37; display:block; margin-bottom:6px"></i>
+            @endif
+            <span class="ar" style="font-weight:800">{{ $currentCompany->name }}</span>
+            <span class="en" style="font-size:11px; opacity:.7">{{ $appSettings['platform_name_ar'] ?? 'نظام الفعاليات' }}</span>
+        @else
+            @if(!empty($appSettings['platform_logo']))
+                <img src="{{ \Illuminate\Support\Str::startsWith($appSettings['platform_logo'], 'data:') ? $appSettings['platform_logo'] : asset('storage/' . $appSettings['platform_logo']) }}" style="max-height: 40px; max-width: 100%; margin-bottom: 8px">
+            @endif
+            <span class="en">{{ $appSettings['platform_name_en'] ?? 'HR System' }}</span>
+            <span class="ar">{{ $appSettings['platform_name_ar'] ?? 'نظام الموارد البشرية' }}</span>
         @endif
-        <span class="en">{{ $appSettings['platform_name_en'] ?? 'HR System' }}</span>
-        <span class="ar">{{ $appSettings['platform_name_ar'] ?? 'نظام الموارد البشرية' }}</span>
     </div>
 
     <a href="{{ route('dashboard') }}" class="{{ request()->is('dashboard') ? 'active' : '' }}">
